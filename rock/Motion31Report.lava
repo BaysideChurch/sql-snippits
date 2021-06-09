@@ -1,0 +1,386 @@
+DECLARE @GivingGroupAmounts table (PersonId int, AccountId int, GivingGroupId int, TotalGiven decimal)
+DECLARE @NoGivingGroupAmounts table (PersonId int, AccountId int, TotalGiven decimal)
+DECLARE @TotalGivingPerson table (PersonId int, AccountId int, TotalGiven decimal, GivingGroupId int)
+DECLARE @TotalGivingByGroup table (PersonId int, AccountId int, TotalGiven decimal, GivingGroupId int)
+DECLARE @RawPledgeData table (PledgeId int, PledgeAmount decimal, PersonId int, AccountId int, GivingGroupId int)
+DECLARE @PledgeAndGiftGroups table (PledgeId int, PledgeAmount decimal, PersonId int, AccountId int, GivingGroupId int, PercentPledgeGiven decimal, TotalGiven decimal)
+DECLARE @PledgeAndGiftNoGroups table (PledgeId int, PledgeAmount decimal, PersonId int, AccountId int, PercentPledgeGiven decimal, TotalGiven decimal)
+DECLARE @PledgeNoGift table (PledgeId int, PledgeAmount decimal, PersonId int, AccountId int, PercentPledgeGiven decimal, TotalGiven decimal)
+DECLARE @GiftNoPledge table (PledgeId int, PledgeAmount decimal, PersonId int, AccountId int, PercentPledgeGiven decimal, TotalGiven decimal)
+DECLARE @TotalGivingAndPledges table (PledgeId int, PledgeAmount decimal, PersonId int, AccountId int, PercentPledgeGiven decimal, TotalGiven decimal)
+
+DECLARE @FormattedData table (
+    PledgeId int
+    , PledgeCampus varchar(40)
+    , FamilyCampus varchar(40)
+    , PersonId int
+    , Account varchar(max)
+    , LastName varchar(40)
+    , GivingGroup varchar(max)
+    , Status varchar(40)
+    , Email varchar(64)
+    , BusinessFirst varchar(40)
+    , BusinessLast varchar(40)
+    , Address varchar(max)
+    , Phone varchar(20)
+    , PercentPledgeGiven decimal
+    , PledgeAmount decimal
+    , TotalGiven decimal
+    , PledgeBalanceDue decimal
+)
+
+
+
+{% assign campusid = 'Global' | PageParameter: 'campusId' | ToInteger %}
+{% assign startDate = 'Global' | PageParameter: 'startDate' | Date: 'dd-MM-yyyy' %}
+{% assign endDate = 'Global' | PageParameter: 'endDate' | Date: 'dd-MM-yyyy' %}
+
+DECLARE @StartDateDT DATETIME
+DECLARE @EndDateDT DATETIME
+
+{% if startDate != empty %}
+SET @StartDateDT = CONVERT(datetime, '{{ startDate }}', 105)
+{% else %}
+SET @StartDateDT = CONVERT(datetime, '2015-01-01', 105)
+{% endif %}
+
+{% if endDate != empty %}
+SET @EndDateDT = DATEADD(DAY, 1, CONVERT(datetime, '{{ endDate }}', 105))
+{% else %}
+SET @EndDateDT = DATEADD(DAY, 1, GETDATE())
+{% endif %}
+
+
+
+-- GivingGroupId 14595
+
+INSERT INTO @TotalGivingByGroup
+
+SELECT
+NULL
+, aft.AccountId
+, Sum(aft.Amount) as [TotalGiven]
+, p.GivingGroupId
+FROM AnalyticsFactFinancialTransaction aft
+JOIN PersonAlias pa ON pa.Id = aft.AuthorizedPersonAliasId
+JOIN Person p ON p.Id = pa.PersonId
+WHERE
+    aft.TransactionDateTime >= @StartDateDT
+    AND aft.TransactionDateTime <= @EndDateDT
+    AND aft.AccountId in (18,497,498,499)
+GROUP BY
+    aft.AccountId
+    , p.GivingGroupId;
+
+-- select * from @TotalGiving WHERE PersonId = 18056;
+-- select * from @TotalGiving WHERE GivingGroupId = 14595;
+-- select * from @TotalGivingByGroup WHERE GivingGroupId in (48409);
+
+
+INSERT INTO @TotalGivingPerson
+
+SELECT
+pa.PersonId
+, aft.AccountId
+, Sum(aft.Amount) as [TotalGiven]
+, p.GivingGroupId
+FROM AnalyticsFactFinancialTransaction aft
+JOIN PersonAlias pa ON pa.Id = aft.AuthorizedPersonAliasId
+JOIN Person p ON p.Id = pa.PersonId
+WHERE
+    aft.TransactionDateTime >= @StartDateDT
+    AND aft.TransactionDateTime <= @EndDateDT
+    AND aft.AccountId in (18,497,498,499)
+GROUP BY
+    aft.AccountId
+    , pa.PersonId
+    , p.GivingGroupId;
+
+-- select * from @TotalGiving WHERE PersonId = 18056;
+-- select * from @TotalGiving WHERE GivingGroupId = 14595;
+-- select * from @TotalGiving WHERE GivingGroupId in (48409);
+
+
+
+
+
+INSERT INTO @RawPledgeData
+
+SELECT
+fp.Id [PledgeId]
+, fp.TotalAmount [PledgeAmount]
+, pa.PersonId
+, fp.AccountId
+, p.GivingGroupId
+FROM FinancialPledge [fp]
+JOIN PersonAlias [pa] ON pa.Id = fp.PersonAliasId
+JOIN Person p ON p.Id = pa.PersonId
+WHERE fp.AccountId in (18,497,498,499)
+    AND fp.StartDate <= @EndDateDT
+    AND fp.EndDate >= @StartDateDT;
+
+-- select * from @RawPledgeData WHERE PersonId = 18056;
+-- select * from @RawPledgeData WHERE GivingGroupId = 14595;
+-- select * from @RawPledgeData WHERE PersonId in (69386);
+
+INSERT INTO @PledgeAndGiftGroups
+
+SELECT
+PledgeId
+, PledgeAmount
+, pledges.PersonId [PersonId]
+, pledges.AccountId [AccountId]
+, tg.GivingGroupId [GivingGroupId]
+, CASE WHEN PledgeAmount IS NULL THEN 0 WHEN PledgeAmount = 0 THEN 0 When TotalGiven is Null Then 0 Else Floor(Cast(TotalGiven as Decimal) / Cast(PledgeAmount as Decimal) * 100) End As PercentPledgeGiven
+, TotalGiven
+FROM @TotalGivingByGroup [tg]
+INNER JOIN @RawPledgeData [pledges] ON pledges.GivingGroupId = tg.GivingGroupId AND pledges.AccountId = tg.AccountId;
+
+-- select * from @PledgeAndGiftGroups WHERE PersonId = 18056;
+-- select * from @PledgeAndGiftGroups WHERE GivingGroupId = 48409;
+-- select * from @PledgeAndGiftGroups WHERE PersonId in (69386);
+-- select * from @PledgeAndGiftGroups WHERE PersonId in (69386);
+
+INSERT INTO @PledgeAndGiftNoGroups
+
+SELECT
+pledges.PledgeId
+, pledges.PledgeAmount
+, pledges.PersonId [PersonId]
+, pledges.AccountId [AccountId]
+, CASE WHEN pledges.PledgeAmount IS NULL THEN 0 WHEN pledges.PledgeAmount = 0 THEN 0 When tg.TotalGiven is Null Then 0 Else Floor(Cast(tg.TotalGiven as Decimal) / Cast(pledges.PledgeAmount as Decimal) * 100) End As PercentPledgeGiven
+, tg.TotalGiven
+FROM @TotalGivingPerson [tg]
+INNER JOIN @RawPledgeData [pledges] ON pledges.PersonId = tg.PersonId AND pledges.AccountId = tg.AccountId
+LEFT JOIN @PledgeAndGiftGroups pgg ON pgg.PledgeId = pledges.PledgeId
+WHERE pgg.PledgeId IS NULL;
+
+
+-- select * from @PledgeAndGiftNoGroups WHERE PersonId IN (69386, 69387);
+-- select * from @PledgeAndGiftNoGroups WHERE PersonId = 18056;
+-- select * from @PledgeAndGiftNoGroups WHERE PersonId = 166637;
+
+
+-- select * from @PledgeAndGift WHERE PersonId = 71948;
+
+INSERT INTO @PledgeNoGift
+
+SELECT
+pledges.PledgeId
+, pledges.PledgeAmount
+, pledges.PersonId [PersonId]
+, pledges.AccountId [AccountId]
+, NULL
+, NULL
+FROM @RawPledgeData [pledges]
+LEFT JOIN @TotalGivingPerson [tg] ON pledges.PersonId = tg.PersonId AND pledges.AccountId = tg.AccountId
+LEFT JOIN @TotalGivingByGroup [tgGroup] ON pledges.GivingGroupId = tg.GivingGroupId AND pledges.AccountId = tg.AccountId
+LEFT JOIN @PledgeAndGiftGroups [pgg] ON pledges.GivingGroupId = pgg.GivingGroupId AND pledges.AccountId = pgg.AccountId
+-- LEFT JOIN @PledgeAndGiftGroups [pgg2] ON pledges.PersonId = pgg2.PersonId AND pledges.AccountId = pgg2.AccountId
+LEFT JOIN @PledgeAndGiftNoGroups [pgng] ON pledges.PersonId = pgng.PersonId AND pledges.AccountId = pgng.AccountId
+
+WHERE tg.PersonId IS NULL
+AND tgGroup.PersonId IS NULL
+AND pgg.PersonId IS NULL
+AND pgng.PersonId IS NULL;
+
+-- select * from @PledgeNoGift WHERE PersonId = 18056;
+-- select * from @PledgeNoGift WHERE PersonId = 166637;
+
+
+INSERT INTO @GiftNoPledge
+
+SELECT
+NULL
+, NULL
+, tg.PersonId [PersonId]
+, tg.AccountId [AccountId]
+, NULL
+, tg.TotalGiven
+FROM @TotalGivingPerson [tg]
+LEFT JOIN @RawPledgeData [pledges] ON pledges.PersonId = tg.PersonId AND pledges.AccountId = tg.AccountId
+LEFT JOIN @RawPledgeData [pledgesGroups] ON pledgesGroups.GivingGroupId = tg.GivingGroupId AND pledgesGroups.AccountId = tg.AccountId
+WHERE pledges.PledgeId IS NULL
+AND pledgesGroups.PledgeId IS NULL;
+
+-- select * from @GiftNoPledge WHERE PersonId = 166637;
+
+INSERT INTO @TotalGivingAndPledges
+
+SELECT
+PledgeId
+, PledgeAmount
+, PersonId
+, AccountId
+, PercentPledgeGiven
+, TotalGiven
+FROM @PledgeAndGiftGroups
+UNION
+SELECT * FROM @PledgeAndGiftNoGroups
+UNION
+SELECT * FROM @PledgeNoGift
+UNION
+SELECT * FROM @GiftNoPledge;
+
+-- select * from @TotalGivingAndPledges WHERE PersonId IN (69386, 69387);
+
+
+
+
+INSERT INTO @FormattedData
+
+Select
+    -- top 100
+    PledgeId
+    , Campus.Name
+    , FamilyCampus.Name
+    , p.Id
+    , fa.[Name]
+    , p.LastName
+    , FamilyNames.FamilyName
+    , CASE WHEN p.RecordTypeValueId = 2 THEN 'Business' ELSE Status.Value END
+    , p.Email
+    , BusinessOwner.NickName
+    , BusinessOwner.LastName
+    , dbo.ufnCrm_GetAddress(p.Id,'Home','FormattedHtmlAddress')
+    , Phones.NumberFormatted
+    , PercentPledgeGiven
+    , PledgeAmount
+    , TotalGiven
+    , PledgeAmount - TotalGiven
+
+    -- , Concat(PercentPledgeGiven,'%') as '% Pledge Given'
+    -- , FORMAT(PledgeAmount, 'C') as TotalPledge
+    -- , FORMAT([TotalGiven], 'C') as [TotalGiven]
+    -- , Format((PledgeAmount) - TotalGiven, 'C') as PledgeBalanceDue
+
+From @TotalGivingAndPledges  pledgedata
+Inner Join FinancialAccount fa
+    on fa.Id = pledgedata.AccountId
+LEFT JOIN AttributeValue PledgeCampus
+    ON PledgeCampus.AttributeId = 4515
+    AND PledgeCampus.EntityId = pledgedata.PledgeId
+LEFT JOIN Campus
+    ON Campus.Guid = TRY_CAST(PledgeCampus.Value AS UNIQUEIDENTIFIER)
+
+Inner Join Person p
+on p.Id = pledgedata.PersonId
+
+OUTER APPLY (
+    SELECT TOP 1
+    *
+    FROM PhoneNumber
+    WHERE PersonId = p.Id
+    ORDER BY NumberTypeValueId
+) [Phones]
+
+LEFT JOIN DefinedValue Status
+    ON Status.Id = p.ConnectionStatusValueId
+
+LEFT JOIN (
+  SELECT
+  PersonId,
+  CampusId
+  FROM (
+    SELECT
+    GM.PersonId,
+    G.CampusId,
+    ROW_NUMBER() OVER (PARTITION BY GM.PersonId ORDER BY GM.Id) AS RowNumber
+    FROM GroupMember [GM]
+    INNER JOIN [Group] [G]
+      ON GM.GroupId = G.Id
+      AND G.GroupTypeId = 10
+  ) [a]
+  WHERE a.RowNumber = 1
+) [PersonCampuses] ON PersonCampuses.PersonId = p.Id
+
+LEFT JOIN Campus [FamilyCampus] ON FamilyCampus.Id = PersonCampuses.CampusId
+
+LEFT JOIN (
+    select
+    BusinessId,
+    OwnerId
+    FROM (
+      SELECT
+      P.Id [BusinessId],
+      OtherPersons.Id [OwnerId],
+      ROW_NUMBER() OVER (PARTITION BY P.Id ORDER BY OtherPersons.Id) [row_number]
+      from [Group] [G]
+      join GroupMember [GM] on GM.GroupId = G.Id
+      join Person [P] on  P.Id = GM.PersonId
+      AND P.RecordTypeValueId = 2
+      join GroupMember [OtherGroupMembers] ON OtherGroupMembers.GroupId = G.Id
+      join Person [OtherPersons] ON OtherPersons.Id = OtherGroupMembers.PersonId AND OtherPersons.Id != P.Id
+      where G.GroupTypeId = 11
+    ) [subTable]
+    WHERE subTable.row_number = 1
+) [BusinessContacts] ON BusinessContacts.BusinessId = p.Id
+
+LEFT JOIN Person [BusinessOwner] ON BusinessContacts.OwnerId =  BusinessOwner.Id
+
+OUTER APPLY (
+  SELECT CASE
+    WHEN LEFT(p.GivingId, 1) = 'P' THEN
+      p.NickName + ' ' + p.LastName
+    WHEN LEFT(p.GivingId, 1) = 'G' THEN
+      (SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, SUBSTRING(p.GivingId, 2, LEN(p.GivingId)), default, default))
+    ELSE
+      (SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, p.GivingId, default, default)) END [FamilyName]
+) [FamilyNames]
+
+{% if campusid != empty %}
+WHERE COALESCE(Campus.Id, FamilyCampus.Id) = '{{ campusid }}'
+{% endif %}
+;
+
+SELECT
+    NULL PledgeId
+    , FORMAT (@StartDateDT, 'MMM dd yyyy') [PledgeCampus]
+    , FORMAT (DATEADD(DAY, -1, @EndDateDT), 'MMM dd yyyy') [FamilyCampus]
+    , NULL [PersonId]
+    , NULL [Account]
+    , NULL [LastName]
+    , NULL [GivingGroup]
+    , NULL [Status]
+    , NULL [Email]
+    , NULL [BusinessFirst]
+    , NULL [BusinessLast]
+    , NULL [Address]
+    , NULL [Phone]
+    , NULL [PercentPledgeGiven]
+    , FORMAT(SUM(PledgeAmount), 'C') [PledgeAmount]
+    , FORMAT(SUM(TotalGiven), 'C') [TotalGiven]
+    , NULL [PledgeBalanceDue]
+ FROM @FormattedData
+
+UNION
+
+SELECT
+   PledgeId
+   , PledgeCampus
+   , FamilyCampus
+   , PersonId
+   , Account
+   , LastName
+   , GivingGroup
+   , Status
+   , Email
+   , BusinessFirst
+   , BusinessLast
+   , Address
+   , Phone
+   , PercentPledgeGiven
+   , FORMAT(PledgeAmount, 'C') [PledgeAmount]
+   , FORMAT(TotalGiven, 'C') [TotalGiven]
+   , PledgeBalanceDue
+FROM @FormattedData
+-- WHERE PersonId IN (69386, 69387)
+ORDER BY PersonId;
+
+
+
+-- SELECT
+-- [Name] [Text],
+-- [Id] [Value]
+-- FROM Campus
+-- WHERE IsActive = 1
