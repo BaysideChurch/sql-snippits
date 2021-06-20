@@ -1,0 +1,75 @@
+{% sql category:'300' return:'events' %}
+
+SELECT TOP 1000
+    ri.[Name] as Name,
+    ri.[Id] as Id,
+    ri.[StartDateTime],
+    ri.[EndDateTime],
+    DATEDIFF(minute, GETDATE(), ri.[EndDateTime]) AS MinutesPastClose,
+    COUNT(rr.Id) AS RegistrantCount
+FROM
+    [RegistrationInstance] ri
+    INNER JOIN [RegistrationTemplate] rt ON ri.[RegistrationTemplateId] = rt.[Id]
+    INNER JOIN [Registration] r ON r.[RegistrationInstanceId] = ri.[Id]
+    INNER JOIN [RegistrationRegistrant] rr ON rr.[RegistrationId] = r.[Id]
+WHERE
+    rt.[CategoryId] = @category AND
+    ri.[Name] LIKE '%GB%' AND
+    DATEDIFF(day, GETDATE(), ri.[EndDateTime]) > -90
+GROUP BY
+    [ri].Name,
+    [ri].Id,
+    DATEDIFF(minute, GETDATE(), ri.[EndDateTime]),
+    ri.[StartDateTime],
+    ri.[EndDateTime]
+ORDER BY
+    ri.[EndDateTime] DESC
+
+{% endsql %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h1 class="panel-title">
+            <i class="fa fa-calendar"></i>
+            Events
+        </h1>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Registration Name</th>
+                    <th>Registrants</th>
+                    <th>Open</th>
+                    <th>Close</th>
+                    <th>Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td>
+                            <a href="https://{{'Global' | Page:'Host'}}/page/1234?RegistrationInstanceId={{event.Id}}">{{ event.Name }}</a>
+                        </td>
+                        <td>
+                            {{ event.RegistrantCount }}
+                        </td>
+                        <td>
+                            {{ event.StartDateTime | Date:'MMM d, yyyy h:m tt' }}
+                        </td>
+                        <td>
+                            {{ event.EndDateTime | Date:'MMM d, yyyy h:m tt' }}
+                        </td>
+                        <td>
+                            {% if event.MinutesPastClose > 0 %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
