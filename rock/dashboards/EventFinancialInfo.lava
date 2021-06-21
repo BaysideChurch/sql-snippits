@@ -1,0 +1,47 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            <i class="fa fa-money"></i>
+        Revenue</h3>
+    </div>
+    <div class="panel-body p-0">
+        {% assign registrationInstanceId = 'Global' | PageParameter:'RegistrationInstanceId' %}
+
+        {% sql registrationInstanceId:'{{ registrationInstanceId }}' %}
+            SELECT
+                SUM(ftd.Amount) AS AmountPaid,
+                SUM(r.[DiscountPercentage] * ri.[Cost]) + SUM(r.[DiscountAmount]) AS Adjustments,
+                SUM(ftd.FeeAmount) AS ProcessingFees,
+                SUM(ftd.Amount) - SUM(r.[DiscountPercentage] * ri.[Cost]) - SUM(r.[DiscountAmount]) - SUM(ftd.FeeAmount) AS TotalRevenue
+            FROM
+                [Registration] r
+                INNER JOIN [RegistrationInstance] ri ON r.[RegistrationInstanceId] = ri.[Id]
+                LEFT JOIN [FinancialTransactionDetail] ftd ON r.[Id] = ftd.[EntityId] AND ftd.[EntityTypeId] = 258
+            WHERE
+                r.[RegistrationInstanceId] = @registrationInstanceId
+        {% endsql %}
+
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Amount Paid</th>
+                    <th>Adjustments</th>
+                    <th>Processing Fees</th>
+                    <th>Total Revenue</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in results %}
+                    <tr>
+                        <td>{{ row.AmountPaid }}</td>
+                        <td>{{ row.Adjustments }}</td>
+                        <td>{{ row.ProcessingFees }}</td>
+                        <td>{{ row.TotalRevenue }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
