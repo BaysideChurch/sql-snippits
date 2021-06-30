@@ -1,0 +1,5 @@
+{% registrationregistrant where:'Id == {{ Id }}' limit:1 %}
+    {% assign mc = registrationregistrant | Attribute:'MedicalConditions' %}
+    {% assign m = registrationregistrant | Attribute:'Medication' %}
+    {% assign da = registrationregistrant | Attribute:'DietaryAllergies' %}
+{% endregistrationregistrant %}
