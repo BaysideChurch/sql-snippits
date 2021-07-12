@@ -1,0 +1,22 @@
+<section class="nav-sub">
+
+{%- if Page.DisplayChildPages and Page.Pages != empty -%}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <p class="panel-title">
+                <i class="fa fa-wrench mr-2"></i>Tools
+            </p>
+        </div>
+        <div class="panel-body">
+            <ul class="nav nav-pills nav-stacked">
+                {%- for childPage in Page.Pages -%}
+                  <li style="margin-left: 0;" {% if childPage.Current %}class='active'{% endif %}>
+                      <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
+                  </li>
+                {%- endfor -%}
+            </ul>
+        </div>
+    </div>
+{%- endif -%}
+
+</section>
