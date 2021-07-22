@@ -1,0 +1,121 @@
+<style>
+    .w-fit-content {
+        width: fit-content !important;
+    }
+    
+    .calendar-selected {
+        background: none !important;
+    }
+    
+    .bcc-login .dropdown-toggle {
+        text-align: center;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .bcc-login .dropdown-toggle:hover {
+        background: none;
+    }
+    
+    .bcc-login .dropdown-menu {
+        border-radius: 10px;
+    }
+    
+    .bcc-login .dropdown-menu li a {
+        transition: all .15s;
+    }
+    
+    .bcc-login .dropdown-menu li a:hover {
+        background: none;
+        transform: scale(1.05);
+        font-weight: bold;
+    }
+    
+    .bcc-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .calendar {
+        border-radius: 10px;
+    }
+    
+    .panel.panel-default {
+        border-radius: 10px;
+    }
+    
+    .btn {
+        border-radius: 10px;
+    }
+    
+    .btn-primary {
+        background-color: var(--bg-two);
+        border: none;
+        transition: all .15s;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--bg-two);
+        opacity: .9;
+        transform: scale(1.05);
+    }
+    
+    .bcc-dropdown .dropdown-toggle {
+        background-color: var(--bg-one);
+    }
+    
+    .bcc-dropdown .dropdown-menu {
+        border-radius: 10px;
+    }
+    
+    .image {
+        border-radius: 10px;
+        box-shadow: 5px 0 20px rgba(0, 0, 0, .2);
+        overflow: hidden;
+    }
+    
+    .bcc-icon-lg {
+        width: 50px;
+    }
+    
+    .card-container {
+        display: flex;
+        flex-flow: row wrap;
+    }
+    
+    .card {
+        flex: 1 0 300px;
+        display: flex;
+        margin: 2rem;
+        justify-content: center;
+        align-items: center;
+        color: inherit;
+        transition: all .15s;
+        min-height: 300px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+    }
+    
+    .card:hover {
+        cursor: pointer;
+        transform: scale 1.05;
+        transition: all .15s;
+        background-color: var(--bg-one);
+        color: var(--hl-one);
+    }
+    
+    .panel-body {
+        border-bottom-left-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+    }
+    
+    .panel-heading {
+        border-top-right-radius: 10px !important;
+        border-top-left-radius: 10px !important;
+    }
+    
+    /* put this class on a wrapper div around a form control to hide its label */
+    .bcc-hide-label .control-label {
+        display: none;
+    }
+</style>
