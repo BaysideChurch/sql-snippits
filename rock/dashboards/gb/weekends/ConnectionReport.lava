@@ -1,0 +1,38 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            <i class="fa fa-user mr-3"></i>
+            People
+        </h3>
+    </div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Connection Opportunity</th>
+                        <th>Status</th>
+                        <th>View</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td>
+                                <a href="https://{{ 'Global' | Page:'Host' }}/person/{{ row.PersonId }}">{{ row.Name }}</a>
+                            </td>
+                            <td>{{ row.Date | Date:'MMM d, yyyy' }}</td>
+                            <td>{{ row.ConnectionOpportunity }}</td>
+                            <td>{{ row.Status }}</td>
+                            <td>
+                                <a href="https://{{ 'Global' | Page:'Host' }}/page/12?ConnectionOpportunityId={{ row.ConnectionOpportunityId }}&ConnectionRequestId={{ row.ConnectionRequestId }}">View</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

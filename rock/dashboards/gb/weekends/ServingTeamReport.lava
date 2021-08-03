@@ -1,0 +1,43 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            <i class="fa fa-user mr-3"></i>
+            People
+        </h3>
+    </div>
+    <div class="panel-body p-0">
+        <div class="table-responsive">
+            <table class="table m-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Serving Teams</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td>
+                                <a href="https://{{ 'Global' | Page:'Host' }}/person/{{ row.PersonId }}">{{ row.Name }}</a>
+                            </td>
+                            <td>{{ row.Date | Date:'MMM d, yyyy' }}</td>
+                            <td>{{ row.Status }}</td>
+                            <td>
+                                {% assign names = row.GroupNames | Split:',' %}
+                                {% assign ids = row.GroupIds | Split:',' %}
+
+                                {% for name in names %}
+                                    {% assign id = ids[forloop.index] %}
+
+                                    <a href="https://{{ 'Global' | Page:'Host' }}/page/113?GroupId={{ id }}">{{ name }}</a>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
