@@ -9,11 +9,22 @@
         </div>
         <div class="panel-body">
             <ul class="nav nav-pills nav-stacked">
-                {%- for childPage in Page.Pages -%}
-                  <li style="margin-left: 0;" {% if childPage.Current %}class='active'{% endif %}>
+                {% for childPage in Page.Pages %}
+                    {% if childPage.Pages != null %}
+                        {% for subPage in childPage.Pages %}
+
+                            {% comment %} could also add 3rd level here... {% endcomment %}
+
+                            {% if subPage.Current %}
+                                {% assign current = true %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                  <li style="margin-left: 0;" {% if childPage.Current or current ==  true %}class='active'{% endif %}>
                       <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
                   </li>
-                {%- endfor -%}
+                {% endfor %}
             </ul>
         </div>
     </div>
