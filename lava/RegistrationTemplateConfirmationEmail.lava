@@ -1,0 +1,116 @@
+{{ 'Global' | Attribute:'EmailHeader' }}
+
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+
+<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Confirmation: {{ RegistrationInstance.Name }}</h1>
+
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+	<p>
+		The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
+	</p>
+
+	<ul>
+	{% for registrant in registrants %}
+		<li>
+
+			<strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+
+			{% if registrant.Cost > 0 %}
+				- {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
+			{% endif %}
+
+			{% assign feeCount = registrant.Fees | Size %}
+			{% if feeCount > 0 %}
+				<br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
+				<ul>
+				{% for fee in registrant.Fees %}
+					<li>
+						{{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+						{% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
+					</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+
+		</li>
+	{% endfor %}
+	</ul>
+{% endif %}
+
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+
+{% if waitListCount > 0 %}
+    <p>
+        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if waitListCount > 1 %}have{% else %}has{% endif %} been added to the wait list for {{ RegistrationInstance.Name }}:
+   </p>
+
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if Registration.TotalCost > 0 %}
+<p>
+    Total Cost: {{ currencySymbol }}{{ Registration.TotalCost | Format:'#,##0.00' }}<br/>
+    {% if Registration.DiscountedCost != Registration.TotalCost %}
+        Discounted Cost: {{ currencySymbol }}{{ Registration.DiscountedCost | Format:'#,##0.00' }}<br/>
+    {% endif %}
+    {% for payment in Registration.Payments %}
+        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
+        <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
+    {% endfor %}
+
+    {% assign paymentCount = Registration.Payments | Size %}
+
+    {% if paymentCount > 1 %}
+        Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format:'#,##0.00' }}<br/>
+    {% endif %}
+
+    Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}
+</p>
+{% endif %}
+
+<p>
+    {{ RegistrationInstance.AdditionalConfirmationDetails }}
+</p>
+
+<p>
+    If you have any questions please contact
+    {% if RegistrationInstance.ContactPersonAlias %}
+        {{ RegistrationInstance.ContactPersonAlias.Person.FullName }}
+    {% else %}
+        us
+    {% endif %}
+
+    at {{ RegistrationInstance.ContactEmail }}
+
+    {% if RegistrationInstance.ContactPhone %}
+        or {{ RegistrationInstance.ContactPhone.FullNumber }}.
+    {% else %}
+        .
+    {% endif %}
+</p>
+
+{% assign cmpInstance = RegistrationInstance | Attribute:'CmpRegistrationInstance','Object' %}
+
+{% if cmpInstance.Id > 0 %}
+    {% assign ageGroups = cmpInstance | Attribute:'CmpAgeRange' %}
+    {% capture cmpRegisterUrl %}https://bayside.church/Registration?RegistrationInstanceId={{cmpInstance.Id}}&EventItemOccurrence={{EventItemOccurrence.Id}}{% endcapture %}
+
+    <div>
+        <p style="font-weight: 700;">Children's Ministry</p>
+        <p>This event is providing Children's Ministry for ages <span style="font-weight: 700;">{{ ageGroups }}</span></p>
+        <p>Click <a href="{{ cmpRegisterUrl }}" target="_blank">here</a> to register!</p>
+    </div>
+{% endif %}
+
+{{ 'Global' | Attribute:'EmailFooter' }}

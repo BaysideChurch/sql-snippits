@@ -30,7 +30,6 @@
 
                                 {% for name in names %}
                                     {% assign id = ids[forloop.index] %}
-
                                     <a href="https://{{ 'Global' | Page:'Host' }}/page/113?GroupId={{ id }}">{{ name }}</a>
                                 {% endfor %}
                             </td>
