@@ -23,124 +23,124 @@
         s.[EffectiveStartDate] DESC,
         ri.[EndDateTime] DESC
 
-    {% endsql %}
+{% endsql %}
 
-    {% assign events = results %}
+{% assign events = results %}
 
-    {% comment %} current events panel {% endcomment %}
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h1 class="panel-title">
-                <i class="fa fa-calendar"></i>
-                Current Events
-            </h1>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>Registration Name</th>
-                        <th>Open</th>
-                        <th>Close</th>
-                        <th>Event Start</th>
-                        <th>Event End</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for event in results %}
-                        {% assign shouldDisplay = false %}
+{% comment %} current events panel {% endcomment %}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h1 class="panel-title">
+            <i class="fa fa-calendar"></i>
+            Current Events
+        </h1>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Registration Name</th>
+                    <th>Open</th>
+                    <th>Close</th>
+                    <th>Event Start</th>
+                    <th>Event End</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in results %}
+                    {% assign shouldDisplay = false %}
 
-                        {% comment %}
-                            only display events that are within reccurrence time frame OR are one time and have not past
-                        {% endcomment %}
-                        {% if event.EventEndDate == null %}
-                            {% if event.DaysPastStart < 0 %}
-                                {% assign shouldDisplay = true %}
-                            {% endif %}
-                        {% elseif event.DaysPastEnd <= 0 %}
+                    {% comment %}
+                        only display events that are within reccurrence time frame OR are one time and have not past
+                    {% endcomment %}
+                    {% if event.EventEndDate == null %}
+                        {% if event.DaysPastStart < 0 %}
                             {% assign shouldDisplay = true %}
                         {% endif %}
+                    {% elseif event.DaysPastEnd <= 0 %}
+                        {% assign shouldDisplay = true %}
+                    {% endif %}
 
-                        {% if shouldDisplay == true %}
-                            <tr>
-                                <td>
-                                    <a href="https://{{'Global' | Page:'Host'}}/page/1234?RegistrationInstanceId={{event.Id}}">{{ event.Name }}</a>
-                                </td>
-                                <td>
-                                    {{ event.RegistrationStart | Date:'MMM d, yyyy h:m tt' }}
-                                </td>
-                                <td>
-                                    {{ event.RegistrationClose | Date:'MMM d, yyyy h:m tt' }}
-                                </td>
-                                <td>
-                                    {{ event.EventStart | Date:'MMM d, yyyy h:m tt' }}
-                                </td>
-                                <td>
-                                    {{ event.EventEnd | Date:'MMM d, yyyy h:m tt' }}
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                    {% if shouldDisplay == true %}
+                        <tr>
+                            <td>
+                                <a href="https://{{'Global' | Page:'Host'}}/page/1235?RegistrationInstanceId={{event.Id}}">{{ event.Name }}</a>
+                            </td>
+                            <td>
+                                {{ event.RegistrationStart | Date:'MMM d, yyyy h:mm tt' }}
+                            </td>
+                            <td>
+                                {{ event.RegistrationClose | Date:'MMM d, yyyy h:mm tt' }}
+                            </td>
+                            <td>
+                                {{ event.EventStart | Date:'MMM d, yyyy h:mm tt' }}
+                            </td>
+                            <td>
+                                {{ event.EventEnd | Date:'MMM d, yyyy h:mm tt' }}
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
 
-    {% comment %} past events {% endcomment %}
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h1 class="panel-title">
-                <i class="fa fa-calendar"></i>
-                Past Events
-            </h1>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>Registration Name</th>
-                        <th>Open</th>
-                        <th>Close</th>
-                        <th>Event Start</th>
-                        <th>Event End</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for event in results %}
-                        {% assign shouldDisplay = false %}
+{% comment %} past events {% endcomment %}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h1 class="panel-title">
+            <i class="fa fa-calendar"></i>
+            Past Events
+        </h1>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Registration Name</th>
+                    <th>Open</th>
+                    <th>Close</th>
+                    <th>Event Start</th>
+                    <th>Event End</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in results %}
+                    {% assign shouldDisplay = false %}
 
-                        {% comment %}
-                            only display events that are within reccurrence time frame OR are one time and have not past
-                        {% endcomment %}
-                        {% if event.EventEndDate == null %}
-                            {% if event.DaysPastStart > 0 %}
-                                {% assign shouldDisplay = true %}
-                            {% endif %}
-                        {% elseif event.DaysPastEnd >0 %}
+                    {% comment %}
+                        only display events that are within reccurrence time frame OR are one time and have not past
+                    {% endcomment %}
+                    {% if event.EventEndDate == null %}
+                        {% if event.DaysPastStart > 0 %}
                             {% assign shouldDisplay = true %}
                         {% endif %}
+                    {% elseif event.DaysPastEnd >0 %}
+                        {% assign shouldDisplay = true %}
+                    {% endif %}
 
-                        {% if shouldDisplay == true %}
-                            <tr>
-                                <td>
-                                    <a href="https://{{'Global' | Page:'Host'}}/page/1234?RegistrationInstanceId={{event.Id}}">{{ event.Name }}</a>
-                                </td>
-                                <td>
-                                    {{ event.RegistrationStart | Date:'MMM d, yyyy h:m tt' }}
-                                </td>
-                                <td>
-                                    {{ event.RegistrationClose | Date:'MMM d, yyyy h:m tt' }}
-                                </td>
-                                <td>
-                                    {{ event.EventStart | Date:'MMM d, yyyy h:m tt' }}
-                                </td>
-                                <td>
-                                    {{ event.EventEnd | Date:'MMM d, yyyy h:m tt' }}
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                    {% if shouldDisplay == true %}
+                        <tr>
+                            <td>
+                                <a href="https://{{'Global' | Page:'Host'}}/page/1235?RegistrationInstanceId={{event.Id}}">{{ event.Name }}</a>
+                            </td>
+                            <td>
+                                {{ event.RegistrationStart | Date:'MMM d, yyyy h:mm tt' }}
+                            </td>
+                            <td>
+                                {{ event.RegistrationClose | Date:'MMM d, yyyy h:mm tt' }}
+                            </td>
+                            <td>
+                                {{ event.EventStart | Date:'MMM d, yyyy h:mm tt' }}
+                            </td>
+                            <td>
+                                {{ event.EventEnd | Date:'MMM d, yyyy h:mm tt' }}
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
