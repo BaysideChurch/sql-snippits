@@ -1,0 +1,17 @@
+<div class="bcc-container">
+    <h1 class="text-center">Ready to Circle Up?</h1>
+    <p class="bcc-description text-center">Check out this video to get started. Don't have time to watch right now? Don't worry. We just emailed you a link to watch later.
+
+    {% assign iframe = Workflow | Attribute:'HostGroupIframe' | WithFallback:'','' %}
+
+    {% if iframe != '' %}
+        <div style="width: 100%; padding-bottom: 56.25%; position: relative;">
+            {{ Workflow | Attribute:'HostGroupIframe' }}
+        </div>
+    {% else %}
+        <div>
+            <p class="font-weight-bold">Under Construction<p>
+            <p>We're currently working on a training video for you! We will make this video available to you as soon as it is completed</p>
+        </div>
+    {% endif %}
+</div>

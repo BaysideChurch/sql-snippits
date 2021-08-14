@@ -1,0 +1,77 @@
+<style>
+.panel-dashboard .panel-heading {
+    background-color: #00aada;
+    color: white
+}
+
+.panel-dashboard .panel-title {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.panel-dashboard {
+    border: 1px solid #dbdbdb;
+    height: auto;
+    margin: 0 0 24px 0 !important;
+}
+
+.panel-dashboard i {
+    font-size: 50px;
+    float:left;
+    opacity: 0.5;
+    margin-top: 8px;
+}
+
+.panel-dashboard .metric-value {
+    font-size:45px;
+    float:right;
+    font-weight: bolder;
+}
+</style>
+
+<div class="row" style="margin-top: 0;">
+
+    {% sql category:'{{ metricCategory }}' iterator:'metrics' %}
+        SELECT
+            [MetricId] AS Id
+        FROM
+            [MetricCategory]
+        WHERE
+            [CategoryId] = @category
+    {% endsql %}
+
+    {% for metric in results %}
+        {% sql metricId:'{{ metric.Id }}' %}
+            SELECT TOP 1
+                m.Title as Title,
+                m.IconCssClass AS IconCssClass,
+                mv.[YValue] AS Value,
+                mv.[MetricValueDateTime]
+            FROM
+                [Metric] m
+                INNER JOIN [MetricValue] mv ON m.[Id] = mv.[MetricId]
+            WHERE
+                m.[Id] = @metricId
+            ORDER BY
+                mv.[MetricValueDateTime] DESC
+        {% endsql %}
+
+        {% if results != empty %}
+            {% assign value = results[0].Value %}
+
+            <div class="col-md-3">
+                <div class="panel-dashboard">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ results[0].Title }}</h3>
+                    </div>
+                    <div class='panel-body'>
+                        <i class="{{ results[0].IconCssClass }} mr-5"></i>
+                        <span class="metric-value">
+                            {% if value && value != '' %} {{ value | Format:'#,##0' }} {% else %} <bolder>0</bolder> {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
