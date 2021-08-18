@@ -1,0 +1,38 @@
+<div class="bcc-container">
+    <h1 class="text-center">
+        <i class="fa fa-check mr-3"></i>
+        Title Here!  (copy needed)<br />
+        <small>Small title here (copy needed)</small>
+    </h1>
+    {% assign nextSteps = Workflow | Attribute:'NextSteps' %}
+    {% if nextSteps contains 'To receive Refuel Daily Devotions' %}
+        <div class="mb-3">
+            <p class="font-weight-bold">Refuel (copy needed)</p>
+            Thanks for signing up for refuel! You will recieve a text with the devotion at the mobile number <strong>{{ Workflow | Attribute:'Person','Object' | PhoneNumber:'Mobile' }}</strong>
+        </div>
+    {% endif %}
+    {% if nextSteps contains 'To publicly declare my faith through water baptism' %}
+        <div class="mb-3">
+            <p class="font-weight-bold">Baptism (copy needed)</p>
+            We're so excited you're interested in Baptism. To sign up, click <a target="_blank" href="https://{{ 'Global' | Page:'Host' }}/calendar/baptism">here</a>
+        </div>
+    {% endif %}
+    {% if nextSteps contains 'To sign up for Growth Track' %}
+        <div class="mb-3">
+            <p class="font-weight-bold">Growth Track (copy needed)</p>
+            We're so excited you're interested in Growth Track. To sign up, click <a target="_blank" href="https://{{ 'Global' | Page:'Host' }}/calendar/growthtrack">here</a>
+        </div>
+    {% endif %}
+    {% if nextSteps contains 'To join or host a small group' %}
+        <div class="mb-3">
+            <p class="font-weight-bold">Small Groups (copy needed)</p>
+            We're so excited you're interested in Small Groups. To sign up to join or host a group, click <a target="_blank" href="https://{{ 'Global' | Page:'Host' }}/groups">here</a>
+        </div>
+    {% endif %}
+    {% if nextSteps contains 'To serve on a ministry team' %}
+        <div class="mb-3">
+            <p class="font-weight-bold">Serving (copy needed)</p>
+            We're so excited you're interested in serving. We have let our staff know you are interested in getting involved. You should recieve an email or phone call from a staff member soon!
+        </div>
+    {% endif %}
+</div>
