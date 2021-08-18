@@ -1,0 +1,74 @@
+{% assign campusId = 'Global' | PageParameter:'CampusId' %}
+
+{% sql ministryAttribute:'17871' campus:'{{ campusId }}' connectionType:'12'  %}
+
+SELECT DISTINCT
+    dv.[Id] AS Id,
+    dv.[Value] AS Name,
+    dv.[Description] AS Description,
+    iconAttrib.[Value] AS IconCssClass
+FROM
+    [ConnectionOpportunity] co
+    INNER JOIN [ConnectionOpportunityCampus] coc ON co.[Id] = coc.[ConnectionOpportunityId]
+    INNER JOIN [AttributeValue] av ON av.[EntityId] = co.[Id]
+    INNER JOIN [DefinedValue] dv ON dv.[Guid] = av.[Value]
+    LEFT JOIN [AttributeValue] iconAttrib ON iconAttrib.[EntityId] = dv.[Id] AND iconAttrib.[AttributeId] = 17870
+WHERE
+    co.[ConnectionTypeId] = 12 AND
+    coc.[CampusId] = @campus AND
+    av.[AttributeId] = @ministryAttribute
+
+{% endsql %}
+
+<style>
+    .bcc-ministry-card {
+        max-width: 250px;
+        width: 100%;
+        height: 250px;
+        background-image: url('https://source.unsplash.com/random/800x600');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        color: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, .6);
+        padding: 2rem;
+        margin: 1rem 0;
+        position: relative;
+        transition: all .15s;
+    }
+
+    .bcc-campus-card:hover {
+        color: white !important;
+        text-decoration: none !important;
+        transform: scale(1.05);
+        transition: all .15s;
+    }
+
+    .bcc-ministry-card-filter {
+        background: rgba(0, 0, 0, .5);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        border-radius: 10px;
+    }
+
+    .bcc-ministry-card-content {
+        position: relative;
+        z-index: 10;
+    }
+</style>
+
+<div class="d-flex flex-wrap justify-content-around">
+    {% for ministry in results %}
+        <a href="https://{{ 'Global' | Page:'Host' }}/serve/campus/{{ campusId }}/ministry/{{ ministry.Id }}" class="bcc-ministry-card d-flex align-items-center justify-content-center">
+            <div class="bcc-ministry-card-filter"></div>
+            <h2 class="font-weight-bold">
+                <i class="{{ ministry.IconCssClass }} mr-2"></i>
+                {{ ministry.Name }}
+            </h2>
+        </a>
+    {% endfor %}
+</div>
