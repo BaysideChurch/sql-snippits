@@ -19,14 +19,6 @@ BEGIN
 END
 GO
 
-/* Recreate RockUser so it points to the current server's Logins */
-DROP USER [RockUser]
-GO
-CREATE USER [RockUser] FOR LOGIN [RockUser]
-GO
-ALTER ROLE [db_owner] ADD MEMBER [RockUser]
-GO
-
 -- ADD 'TEST' BANNER
 UPDATE B SET 
 	  [PreHtml] = '<h4 style="position:absolute;left:80px;top:6px; color: black;">You are connected to the <strong>Test</strong> database.</h4><script>$(".navbar-static-top").css("background-color","burlywood");</script>'
