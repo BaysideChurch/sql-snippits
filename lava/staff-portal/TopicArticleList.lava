@@ -1,0 +1,22 @@
+{% assign topic = 'Global' | PageParameter:'Topic' %}
+
+<style>
+    .item-content img {
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,.1);
+        width: 100% !important;
+    }
+</style>
+
+<div>
+    {% for item in Items %}
+        {% assign itemTopic = item | Attribute:'Topic','RawValue' %}
+
+        {% if itemTopic == topic %}
+            <div>
+                <h3>{{ item.Title }}</h3>
+                <div class="item-content">{{ item.Content }}</div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>

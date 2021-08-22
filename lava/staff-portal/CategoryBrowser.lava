@@ -1,0 +1,24 @@
+<style>
+    .bcc-topic {
+        padding: 1rem 2rem;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,.2);
+        border-radius: 10px;
+    }
+</style>
+
+{% definedvalue where:'DefinedTypeId == {{ categoryDefinedTypeId }}' iterator:'values' %}
+
+    <div class="d-flex flex-wrap justify-content-center">
+        {% for value in values %}
+            {% capture url %}https://{{ 'Global' | Page:'Host' }}/{{ detailPagePath }}?Category={{ value.Guid }}{% endcapture %}
+            <a class="link bcc-card m-3 bcc-topic" href="{{ url }}">
+                <h2 class="text-center">
+                    <i class="{{ value | Attribute:'IconCssClass' }} mr-3"></i>
+                    {{ value.Value }}
+                </h2>
+            </a>
+        {% endfor %}
+    </div>
+
+{% enddefinedvalue %}

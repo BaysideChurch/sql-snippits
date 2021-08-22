@@ -1,0 +1,21 @@
+{% assign topic = 'Global' | PageParameter:'Topic' %}
+
+{% definedvalue where:'Guid == "{{ topic }}"' limit:1 %}
+    {% assign title = definedvalue.Value %}
+    {% assign subtitle  = definedvalue | Attribute:'Subtitle' %}
+    {% assign icon = definedvalue | Attribute:'IconCssClass' %}
+{% enddefinedvalue %}
+
+<div class="d-flex justify-content-center align-items-center">
+    <i class="fa-4x mr-3 {{ icon }}"></i>
+    <h1>
+        {{ title }} <br />
+        <small>{{ subtitle }}</small>
+    </h1>
+</div>
+<div class="d-flex justify-content-center">
+    <p>
+        {% capture url %}https://{{ 'Global' | Page:'Host' }}/staff/help{% endcapture %}
+        <a href="{{ url }}">Back</a>
+    </p>
+</div>
