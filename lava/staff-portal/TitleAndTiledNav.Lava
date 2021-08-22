@@ -1,0 +1,36 @@
+
+{% comment %}
+    linksStr is a csv string with raw HTML to be included in the links part
+    of the nav
+{% endcomment %}
+{% assign links = linksStr | Split:',' %}
+
+<div class="d-flex justify-content-center align-items-center">
+    <i class="fa-4x mr-3 {{ Page.IconCssClass }}"></i>
+    <h1>
+        {{ Page.Title }} <br />
+        <small>{{ Page.Description }}</small>
+    </h1>
+</div>
+
+<div class="d-flex justify-content-center align-items-center mb-5">
+    {% foreach link in links %}
+        {{ link }}
+    {% endfor %}
+</div>
+
+{% if Page.DisplayChildPages and Page.Pages != empty %}
+    <div class="card-container w-100">
+        {% for childPage in Page.Pages %}
+            <a href="{{ childPage.Url }}" class="card p-2">
+                <h3>
+                    <i class="{{ childPage.IconCssClass }} mr-2"></i>
+                    {{ childPage.Title }}
+                </h3>
+                <small class="text-center">
+                    {{ childPage.Description }}
+                </small>
+            </a>
+        {% endfor %}
+    </div>
+{% endif %}
