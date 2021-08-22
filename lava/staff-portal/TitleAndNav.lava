@@ -1,0 +1,19 @@
+{% comment %}
+    linksStr is a csv string with raw HTML to be included in the links part
+    of the nav
+{% endcomment %}
+{% assign links = linksStr | Split:',' %}
+
+<div class="d-flex justify-content-center align-items-center">
+    <i class="fa-4x mr-3 {{ Page.IconCssClass }}"></i>
+    <h1>
+        {{ Page.Title }} <br />
+        <small>{{ Page.Description }}</small>
+    </h1>
+</div>
+
+<div class="d-flex justify-content-center align-items-center mb-5">
+    {% for link in links %}
+        {{ link }}
+    {% endfor %}
+</div>
