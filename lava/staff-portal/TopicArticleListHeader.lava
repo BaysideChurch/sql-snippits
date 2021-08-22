@@ -13,9 +13,7 @@
         <small>{{ subtitle }}</small>
     </h1>
 </div>
-<div class="d-flex justify-content-center">
-    <p>
-        {% capture url %}https://{{ 'Global' | Page:'Host' }}/staff/help{% endcapture %}
-        <a href="{{ url }}">Back</a>
-    </p>
-</div>
+
+{% comment %}
+    TODO: add a back button here to go back to the department topic list
+{% endcomment %}
