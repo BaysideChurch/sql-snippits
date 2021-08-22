@@ -11,7 +11,7 @@
 
     <div class="d-flex flex-wrap justify-content-center">
         {% for value in values %}
-            {% capture url %}https://{{ 'Global' | Page:'Host' }}/{{ detailPagePath }}?Category={{ value.Guid }}{% endcapture %}
+            {% capture url %}https://{{ 'Global' | Page:'Host' }}/{{ detailPagePath }}?Topic={{ value.Guid }}{% endcapture %}
             <a class="link bcc-card m-3 bcc-topic" href="{{ url }}">
                 <h2 class="text-center">
                     <i class="{{ value | Attribute:'IconCssClass' }} mr-3"></i>
