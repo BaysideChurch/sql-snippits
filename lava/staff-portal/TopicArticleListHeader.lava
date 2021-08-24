@@ -2,7 +2,7 @@
 
 {% definedvalue where:'Guid == "{{ topic }}"' limit:1 %}
     {% assign title = definedvalue.Value %}
-    {% assign subtitle  = definedvalue | Attribute:'Subtitle' %}
+    {% assign subtitle  = definedvalue.Description %}
     {% assign icon = definedvalue | Attribute:'IconCssClass' %}
 {% enddefinedvalue %}
 
