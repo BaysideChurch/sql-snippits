@@ -1,0 +1,73 @@
+{% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
+
+{% if eventItemOccurrenceCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+{% endif %}
+
+{% for eventItemOccurrence in EventItemOccurrences %}
+    <div class="panel panel-default margin-t-md">
+      <div class="d-flex align-items-center clearfix p-3">
+        <h4 class="m-0">
+          {{ eventItemOccurrence.Name }}
+        </h4>
+        <div class="ml-auto">
+          {% if eventItemOccurrence.DetailPage != null %}
+              <a class="btn btn-primary" href="{{ eventItemOccurrence.DetailPage }}">
+                View Details <i class="fa fa-chevron-right"></i>
+              </a>
+          {% else %}
+              <a class="btn btn-primary" href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
+                  View Details <i class="fa fa-chevron-right"></i>
+              </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="col-md-2">
+          <div class="row">
+            <strong>Date</strong>
+          </div>
+          <div class="row">
+            {% if eventItemOccurrence.Date != eventItemOccurrence.EndDate %}
+              {{ eventItemOccurrence.Date | Date: 'MMM d' }} - {{ eventItemOccurrence.EndDate | Date: 'MMM d' }}
+            {% else %}
+              {{ eventItemOccurrence.Date | Date: 'MMM d' }}
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="row">
+            <strong>Time</strong>
+          </div>
+          <div class="row">
+            {{ eventItemOccurrence.Time }}
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="row">
+            <strong>Campus</strong>
+          </div>
+          <div class="row">
+            {{ eventItemOccurrence.Campus }}
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="row">
+            <strong>Summary</strong>
+          </div>
+          <div class="row">
+            {{ eventItemOccurrence.Summary }}
+          </div>
+        </div>
+      </div>
+    </div>
+{% endfor %}
+
+<script type="text/javascript">
+  $( document ).ready(function() {
+    $('.js-group-item').tooltip();
+  });
+</script>
