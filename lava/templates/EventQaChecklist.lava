@@ -1,0 +1,88 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            <i class="fa fa-check"></i>
+            Check-List
+        </h2>
+    </div>
+    <div class="panel-body">
+        {% assign instanceId = PageParameter.RegistrationInstanceId %}
+
+        {% eventitemoccurrencegroupmap where:'RegistrationInstanceId == {{ instanceId }}' iterator:'maps' limit:1 %}
+            {% assign size = maps | Size %}
+
+            {% if size <= 0 %}
+                <div class="alert alert-danger">
+                    This registration has no linkages. It will not show up on dashboard, please add a linkage with the proper campus and ministry.
+                </div>
+            {% else %}
+                {% for map in maps %}
+                    <div>
+                        {% comment %} check slug {% endcomment %}
+                        {% assign slug = map.UrlSlug | WithFallback:'','' %}
+
+                        {% if slug != '' %}
+                            <h5 class="mb-2">{{ slug }}</h5>
+                        {% else %}
+                            <div class="alert alert-danger mb-2">
+                                This linkage has no slug! Registrants will not be added to the linked group. Click <a href="https://{{ 'Global' | Page:'Host' }}/page/406?LinkageId={{ map.Id }}&RegistrationInstanceId={{ map.RegistrationInstance.Id }}" target="_blank">here</a> to edit the linkage and add a slug.
+                            </div>
+                        {% endif %}
+
+                        {% comment %} Group {% endcomment %}
+                        {% if map.Group.Id > 0 %}
+                            <div class="mb-2">
+                                <p class="font-weight-bold">Group</p>
+                                <div class="alert alert-success">
+                                    This linkage has a group.
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning mb-2">
+                                This linkage has no group! Click <a href="https://{{ 'Global' | Page:'Host' }}/page/406?LinkageId={{ map.Id }}&RegistrationInstanceId={{ map.RegistrationInstance.Id }}" target="_blank">here</a> to add a group.
+                            </div>
+                        {% endif %}
+
+                        {% comment %} EventItemOccurrence {% endcomment %}
+                        {% if map.EventItemOccurrence.Id > 0 %}
+                            <div class="mb-2">
+                                <p class="font-weight-bold">Event Item Occurrence</p>
+                                <div class="alert alert-success">
+                                    This linkage has an event item occurrence.
+                                </div>
+
+                                {% assign eic = map.EventItemOccurrence %}
+
+                                {% if eic.Campus.Id > 0 %}
+                                    <div class="alert alert-success">
+                                        The event item occurrence has a campus.
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-danger">
+                                        The event item occurrence does not have a campus or is marked 'All'. This event will not show up on a dashboard.
+                                    </div>
+                                {% endif %}
+
+                                {% assign ministry = eic | Attribute:'Ministry' | WithFallback:'','' %}
+
+                                {% if ministry != '' and ministry != 'General' %}
+                                    <div class="alert alert-success">
+                                        The event item occurrence has a ministry.
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-danger">
+                                        The event item occurrence does not have a ministry or is marked 'General'. This event will not show up on a dashboard.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger mb-2">
+                                This linkage has no event item occurrence! Click <a href="https://{{ 'Global' | Page:'Host' }}/page/406?LinkageId={{ map.Id }}&RegistrationInstanceId={{ map.RegistrationInstance.Id }}" target="_blank">here</a> to add an event item occurrence.
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endeventitemoccurrencegroupmap %}
+    </div>
+</div>
