@@ -7,8 +7,8 @@
         ri.[StartDateTime] AS RegistrationStart,
         ri.[EndDateTime] AS RegistrationClose,
         s.[EffectiveStartDate] AS EventStart,
-        s.[EffectiveEndDate] AS EventEnd,
-        DATEDIFF(day, s.[EffectiveEndDate], GETDATE()) AS DaysPastEnd,
+        COALESCE(s.[EffectiveEndDate], s.[EffectiveStartDate]) AS EventEnd,
+        DATEDIFF(day, COALESCE(s.[EffectiveEndDate], s.[EffectiveStartDate]), GETDATE()) AS DaysPastEnd,
         DATEDIFF(day, s.[EffectiveStartDate], GETDATE()) AS DaysPastStart
     FROM
         [EventItemOccurrence] eic
@@ -20,12 +20,16 @@
         av.[Value] = @ministryGuid AND
         eic.[CampusId] = @campusId
     ORDER BY
-        s.[EffectiveStartDate] DESC,
+        s.[EffectiveStartDate] ASC,
         ri.[EndDateTime] DESC
 
 {% endsql %}
 
 {% assign events = results %}
+
+{% for e in events %}
+    {{ e.Name }} - {{ e.DaysPastEnd }} {{ e.DaysPastStart }} <br />
+{% endfor %}
 
 {% comment %} current events panel {% endcomment %}
 <div class="panel panel-default">
@@ -53,11 +57,7 @@
                     {% comment %}
                         only display events that are within reccurrence time frame OR are one time and have not past
                     {% endcomment %}
-                    {% if event.EventEndDate == null %}
-                        {% if event.DaysPastStart < 0 %}
-                            {% assign shouldDisplay = true %}
-                        {% endif %}
-                    {% elseif event.DaysPastEnd <= 0 %}
+                    {% if event.DaysPastEnd <= 0 %}
                         {% assign shouldDisplay = true %}
                     {% endif %}
 
@@ -112,11 +112,7 @@
                     {% comment %}
                         only display events that are within reccurrence time frame OR are one time and have not past
                     {% endcomment %}
-                    {% if event.EventEndDate == null %}
-                        {% if event.DaysPastStart > 0 %}
-                            {% assign shouldDisplay = true %}
-                        {% endif %}
-                    {% elseif event.DaysPastEnd >0 %}
+                    {% if event.DaysPastStart > 0 %}
                         {% assign shouldDisplay = true %}
                     {% endif %}
 
