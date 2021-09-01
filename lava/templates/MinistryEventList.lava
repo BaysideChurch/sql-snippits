@@ -27,10 +27,6 @@
 
 {% assign events = results %}
 
-{% for e in events %}
-    {{ e.Name }} - {{ e.DaysPastEnd }} {{ e.DaysPastStart }} <br />
-{% endfor %}
-
 {% comment %} current events panel {% endcomment %}
 <div class="panel panel-default">
     <div class="panel-heading">
