@@ -9,8 +9,6 @@
   {% assign bodyBackgroundColor = '#f3f3f3' %}
   {% assign textColor = '#0a0a0a' %}
 </noscript>
-
-
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <meta name="viewport" content="width=device-width">
   <title>My Basic Email Template Subject</title>
