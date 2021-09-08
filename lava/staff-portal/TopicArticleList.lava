@@ -13,7 +13,7 @@
         {% assign itemTopic = item | Attribute:'Topic','RawValue' %}
 
         {% if itemTopic == topic %}
-            <div>
+            <div style="padding: .5rem 2rem; margin-bottom: 2rem; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, .3);">
                 <h3>{{ item.Title }}</h3>
                 <div class="item-content">{{ item.Content }}</div>
             </div>

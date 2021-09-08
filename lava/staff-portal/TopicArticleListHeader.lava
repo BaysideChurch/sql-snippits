@@ -6,7 +6,7 @@
     {% assign icon = definedvalue | Attribute:'IconCssClass' %}
 {% enddefinedvalue %}
 
-<div class="d-flex justify-content-center align-items-center">
+<div class="d-flex justify-content-center align-items-center mb-5">
     <i class="fa-4x mr-3 {{ icon }}"></i>
     <h1>
         {{ title }} <br />
