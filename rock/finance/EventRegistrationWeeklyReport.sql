@@ -37,8 +37,8 @@ AS
             WHERE 
                 t.[FinancialGatewayId] = 4 AND
                 t.[TransactionTypeValueId] = 54 AND
-                [TransactionDateTime] >= CAST(CONVERT(datetimeoffset,GETDATE(),127) AS DATE) AND
-                [TransactionDateTime] < DATEADD (day, 1,CAST(CONVERT(datetimeoffset,GETDATE(),127) AS DATE))
+                [TransactionDateTime] >= CAST(CONVERT(datetimeoffset,@StartDate,127) AS DATE) AND
+                [TransactionDateTime] < DATEADD (day, 1,CAST(CONVERT(datetimeoffset,@EndDate,127) AS DATE))
         ) [a]
     GROUP BY Event, Ministry, Campus, RegistrationInstanceId, StartDate, EndDate
 )
