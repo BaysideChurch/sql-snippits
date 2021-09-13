@@ -22,7 +22,6 @@ AS
     FROM
         FinancialTransaction t
         INNER JOIN FinancialTransactionDetail td ON t.Id = td.TransactionId
-        LEFT JOIN EntityType et ON et.Id = td.EntityTypeId AND td.EntityTypeId = @RegistrationEntityId
         LEFT JOIN Registration re ON re.Id = td.EntityId
         LEFT JOIN RegistrationInstance ri ON ri.Id = re.RegistrationInstanceId
         INNER JOIN FinancialAccount a ON td.AccountId = a.Id
@@ -49,14 +48,14 @@ FROM
         UNION ALL
 
         SELECT
-            null,           -- Name
-            null,           -- TransactionDate
-            null,           -- Fund
-            null,           -- CurrencyType
-            sum(CAST(Amount AS decimal(12,2))),        -- Amount
-            sum(CAST(Fees AS decimal(12,2))),      -- Fees
-            sum(CAST(Net AS decimal(12,2))),         -- Net
-            null            -- Id
+            null,                                   -- Name
+            null,                                   -- TransactionDate
+            null,                                   -- Fund
+            null,                                   -- CurrencyType
+            sum(CAST(Amount AS decimal(12,2))),     -- Amount
+            sum(CAST(Fees AS decimal(12,2))),       -- Fees
+            sum(CAST(Net AS decimal(12,2))),        -- Net
+            null                                    -- Id
         FROM 
             event_registration_CTE
     ) [presort]
