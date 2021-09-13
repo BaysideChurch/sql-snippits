@@ -1,0 +1,45 @@
+{% assign campusGuid = 'Global' | PageParameter:'CampusGuid' %}
+{% assign ministryGuid = 'Global' | PageParameter:'MinistryGuid' %}
+
+{% sql campusGuid:'{{ campusGuid }}' ministryGuid:'{{ ministryGuid }}'  %}
+
+SELECT
+    co.[Id],
+    co.[Name],
+    co.[PublicName],
+    co.[PhotoId]
+    co.[IconCssClass],
+    cci.[Id]
+FROM
+    [ConnectionOpportunity] co
+    INNER JOIN [AttributeValue] channelAttrib ON channelAttrib.[EntityId] = co.[Id] AND channelAttrib.[AttributeId] = 20241 -- content channel id is attrib on connection opportunity
+    INNER JOIN [ContentChannel] cc ON cc.[Guid] = channelAttrib.[Value]
+    INNER JOIN [ContentChannelItem] cci ON cci.[ContentChannelId] = cc.[Id]
+    INNER JOIN [AttributeValue] cciCampusAttrib ON cciCampusAttrib.[EntityId] = cci.[Id] AND cciCampusAttrib.[AttributeId] = 20238 -- cci campus attrib
+    INNER JOIN [AttributeValue] cciOpportunityAttrib ON cciOpportunityAttrib.[EntityId] = cci.[Id] AND cciOpportunityAttrib.[AttributeId] = 20239-- cci opportunity attrib
+    INNER JOIN [AttributeValue] ministryAttrib ON ministryAttrib.[EntityId] = co.[Id] AND ministryAttrib.[AttributeId] = 20242 -- ministry attrib
+WHERE
+    co.[ConnectionTypeId] != 12 AND -- exculde volunteer type
+    cciCampusAttrib.[Value] = @campusGuid AND
+    ministryAttrib.[Value] = @ministryGuid
+
+{% endsql %}
+
+{{ results | Size }}
+
+<div class="d-flex flex-wrap justify-content-around">
+    {% for opportunity in results %}
+        <div class="m-3" style="max-width: 400px;">
+            <h3>
+                <i class="{{ opportunity.IconCssClass }} mr-2"></i>
+                {{ opportunity.PublicName }}
+            </h3>
+            <p>
+                {{ opportunity.Summary }}
+            </p>
+            <div>
+                <a class="btn btn-primary" href="https://{{ 'Global' | Page:'Host' }}/interest/{{ campusGuid }}/{{ ministryGuid }}/{{ opportunity.ContentItemId }}">Details</a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
