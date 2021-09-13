@@ -1,0 +1,64 @@
+DECLARE @SimpleDonationGatewayId INT,
+    @EventRegistrationTransactionId INT,
+    @FundId INT,
+    @RegistrationEntityId INT;
+SET @SimpleDonationGatewayId = 4;
+SET @FundId = 4;
+SET @EventRegistrationTransactionId = 54;
+SET @RegistrationEntityId = 258;
+
+WITH event_registration_cte (Name, TransactionDate, Fund, CurrencyType, Amount, Fees, Net, Id)
+AS
+(
+    SELECT
+        p.FirstName + ' ' + p.LastName AS [Name],
+        CAST(TransactionDateTime AS DATE) AS [TransactionDate],
+        a.Name AS [Fund], -- Should always be 4. Event Registration
+        dv.Value AS [CurrencyType],
+        td.Amount AS [Amount],
+        td.FeeAmount AS [Fees],
+        td.Amount-td.FeeAmount AS [Net],
+        t.Id
+    FROM
+        FinancialTransaction t
+        INNER JOIN FinancialTransactionDetail td ON t.Id = td.TransactionId
+        LEFT JOIN EntityType et ON et.Id = td.EntityTypeId AND td.EntityTypeId = @RegistrationEntityId
+        LEFT JOIN Registration re ON re.Id = td.EntityId
+        LEFT JOIN RegistrationInstance ri ON ri.Id = re.RegistrationInstanceId
+        INNER JOIN FinancialAccount a ON td.AccountId = a.Id
+        INNER JOIN PersonAlias PA ON t.AuthorizedPersonAliasId = PA.Id
+        INNER JOIN Person p ON PA.PersonId = p.Id
+        LEFT JOIN FinancialPaymentDetail fpd ON fpd.Id=t.FinancialPaymentDetailId
+        LEFT JOIN DefinedValue dv ON dv.Id=fpd.CurrencyTypeValueId
+    WHERE 
+        t.FinancialGatewayId = @SimpleDonationGatewayId AND
+        ri.Id= @RegistrationInstanceId AND
+        TransactionDateTime >= CAST(CONVERT(datetimeoffset,@StartDate,127) AS DATE) AND
+        TransactionDateTime < DATEADD (day, 1,CAST(CONVERT(datetimeoffset,@EndDate,127) AS DATE))
+)
+
+SELECT
+    *
+FROM 
+    (
+        SELECT 
+            *
+        FROM 
+            event_registration_cte
+
+        UNION ALL
+
+        SELECT
+            null,           -- Name
+            null,           -- TransactionDate
+            null,           -- Fund
+            null,           -- CurrencyType
+            sum(CAST(Amount AS decimal(12,2))),        -- Amount
+            sum(CAST(Fees AS decimal(12,2))),      -- Fees
+            sum(CAST(Net AS decimal(12,2))),         -- Net
+            null            -- Id
+        FROM 
+            event_registration_CTE
+    ) [presort]
+ORDER BY 
+    Amount ASC
