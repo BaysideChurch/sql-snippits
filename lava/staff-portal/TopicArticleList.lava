@@ -3,7 +3,6 @@
 <style>
     .item-content img {
         border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,.1);
         width: 100% !important;
     }
 </style>
@@ -13,8 +12,12 @@
         {% assign itemTopic = item | Attribute:'Topic','RawValue' %}
 
         {% if itemTopic == topic %}
-            <div style="padding: .5rem 2rem; margin-bottom: 2rem; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, .3);">
-                <h3>{{ item.Title }}</h3>
+            <div style="padding: .5rem 2rem; margin-bottom: 2rem; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, .3);"
+                id="{{ item.Guid }}">
+                <div>
+                    <h3 class="pull-left">{{ item.Title }}</h3>
+                    <a class="pull-right" href="https://{{ 'Global' | Page:'Url' }}}#{{ item.Guid }}">Link</a>
+                </div>
                 <div class="item-content">{{ item.Content }}</div>
             </div>
         {% endif %}
