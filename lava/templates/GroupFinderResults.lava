@@ -1,0 +1,209 @@
+<style>
+    .bcc-group-card {
+        max-width: 300px;
+        width: 100%;
+        min-height: 300px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, .15);
+        padding: 1rem;
+        margin: 1rem 0;
+        position: relative;
+        transition: all .15s;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .bcc-group-card:hover {
+        text-decoration: none !important;
+        transform: scale(1.05);
+        transition: all .15s;
+    }
+</style>
+
+<h2>Results</h2>
+<div class="d-flex flex-wrap justify-content-around">
+    {% for group in Groups %}
+        {% comment %} TODO: add all registration instance groups to an array and siplay them seperatley {% endcomment %}
+        {% sql groupId:'{{ group.Id }}' return:'placements' %}
+            SELECT
+                re.SourceEntityId AS [RegistrationInstanceId],
+                re.TargetEntityId AS [GroupId]
+            FROM
+                [RelatedEntity] re
+            WHERE
+                re.[TargetEntityId] = @groupId AND
+                re.[PurposeKey] = 'PLACEMENT'
+        {% endsql %}
+
+        {% assign placementsSize = placements | Size %}
+
+        {% comment %} create a card for each linked placement {% endcomment %}
+        {% if placementsSize > 0 %}
+            {% assign regInstId = placements[0].RegistrationInstanceId %}
+            {% registrationinstance where:'Id == {{ placements[0].RegistrationInstanceId }}' iterator:'registrationinstances' %}
+                {% assign instances = registrationinstances %}
+            {% endregistrationinstance %}
+
+            {% for instance in instances %}
+                <div class="bcc-group-card">
+                    <div>
+                        {% assign templateName = instance.RegistrationTemplate | Attribute:'PublicName' %}
+                        {% assign instanceName = instance | Attribute:'PublicDescription' %}
+                        <h5 class="m-0">{{ templateName }}</h5>
+                        <p class="m-0">{{ instanceName }}</p>
+                        <p class="text-muted mb-3">{{ group.Name }}</p>
+                        <div>
+                            <p class="font-weight-bold m-0">Campus</p>
+                            <p class="m-0">{{ group.Campus.Name }}</p>
+                        </div>
+                        <div>
+                            {% assign category = group | Attribute:'Category1' | WithFallback:'','' %}
+                            <p class="font-weight-bold m-0">Category</p>
+                            <p class="m-0">
+                                {% if category != '' %}
+                                    {{ category }}
+                                {% else %}
+                                    None
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            {% assign schedule = group.Schedule.FriendlyScheduleText | WithFallback:'','' %}
+                            <p class="font-weight-bold m-0">Schedule</p>
+                            <p class="m-0">
+                                {% if schedule != '' %}
+                                    {{ schedule }}
+                                {% else %}
+                                    Unknown
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            {% comment %} clear groupLocation from last iteration {% endcomment %}
+                            {% assign groupLocation = null %}
+
+                            {% comment %} get the meeting location {% endcomment %}
+                            {% for location in group.GroupLocations %}
+                                {% if location.GroupLocationTypeValueId == 209 %}
+                                    {% assign groupLocation = location %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% assign postalCode = group | Attribute:'PostalCode' | WithFallback:'','' %}
+
+                            {% if groupLocation.Location.PostalCode != null or postalCode != '' %}
+                                <p class="font-weight-bold m-0">Postal Code</p>
+                                <p class="m-0">
+                                    {% if groupLocation != null %}
+                                        {{ groupLocation.Location.PostalCode }}
+                                    {% elseif postalCode != '' %}
+                                        {{ postalCode }}
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        {% eventitemoccurrencegroupmap where:'RegistrationInstanceId == {{ instance.Id }}' iterator:'maps' limit:1 %}
+                            {% assign size = maps | Size %}
+
+                            {% if size > 1 %}
+                                <div>
+                                    {% for map in maps %}
+                                        {% assign slug = map.UrlSlug | WithFallback:'','' %}
+
+                                        {% if slug != '' %}
+                                            <a href="https://{{ 'Global' | Page:'Host' }}/registration/{{ slug }}">Register for {{ map.Group.Name }}</a>
+                                        {% else %}
+                                            <a href="https://{{ 'Global' | Page:'Host' }}/registration?RegistrationInstanceId={{ instanceId }}">Register for {{ map.Group.Name }}</a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% elseif size == 1 %}
+                                <div>
+                                    {% for map in maps %}
+                                        {% assign slug = map.UrlSlug | WithFallback:'','' %}
+
+                                        {% if slug != '' %}
+                                            <a href="https://{{ 'Global' | Page:'Host' }}/registration/{{ slug }}">Register</a>
+                                        {% else %}
+                                            <a href="https://{{ 'Global' | Page:'Host' }}/registration?RegistrationInstanceId={{ instanceId }}">Register</a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div>
+                                    <a href="https://{{ 'Global' | Page:'Host' }}/registration?RegistrationInstanceId={{ instanceId }}">Register</a>
+                                </div>
+                            {% endif %}
+                        {% endeventitemoccurrencegroupmap %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            {% comment %} no placements found, render regular card {% endcomment %}
+            <div class="bcc-group-card">
+                <div>
+                    <h5 class="m-0">{{ group.Name }}</h5>
+                    <div class="mt-3">
+                        <p class="font-weight-bold m-0">Campus</p>
+                        <p class="m-0">{{ group.Campus.Name }}</p>
+                    </div>
+                    <div>
+                        {% assign category = group | Attribute:'Category1' | WithFallback:'','' %}
+                        <p class="font-weight-bold m-0">Category</p>
+                        <p class="m-0">
+                            {% if category != '' %}
+                                {{ category }}
+                            {% else %}
+                                None
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        {% assign schedule = group.Schedule.FriendlyScheduleText | WithFallback:'','' %}
+                        <p class="font-weight-bold m-0">Schedule</p>
+                        <p class="m-0">
+                            {% if schedule != '' %}
+                                {{ schedule }}
+                            {% else %}
+                                Unknown
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        {% comment %} clear groupLocation from last iteration {% endcomment %}
+                        {% assign groupLocation = null %}
+
+                        {% comment %} get the meeting location {% endcomment %}
+                        {% for location in group.GroupLocations %}
+                            {% if location.GroupLocationTypeValueId == 209 %}
+                                {% assign groupLocation = location %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% assign postalCode = group | Attribute:'PostalCode' | WithFallback:'','' %}
+
+                        {% if groupLocation != null or postalCode != '' %}
+                            <p class="font-weight-bold m-0">Postal Code</p>
+                            <p class="m-0">
+                                {% if groupLocation != null %}
+                                    {{ groupLocation.Location.PostalCode }}
+                                {% elseif postalCode != '' %}
+                                    {{ postalCode }}
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{{ LinkedPages.RegisterPage }}?GroupId={{ group.Id }}">Learn More</a>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
