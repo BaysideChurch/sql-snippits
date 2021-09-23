@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Modal Example</title>
+        <style>
+            .modal-overlay {
+                position: absolute;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, .5);
+                top: 0;
+                left: 0;
+                display: none;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .shown {
+                display: flex !important;
+            }
+
+            .modal {
+                background: white;
+                border-radius: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Some Text</h1>
+        <div>
+            <button id="open-button" data-name="Some String">Show</button>
+        </div>
+        <div class="modal-overlay">
+            <div class="modal">
+                <h3 id="modal-title"></h3>
+                <button id="close-button">close</button>
+            </div>
+        </div>
+        <script>
+            document.getElementById('close-button').addEventListener('click', () => {
+                let button = document.getElementById('open-button');
+                let someString = button.getAttribute('data-name');
+
+                document.querySelector('.modal-overlay').classList.remove('shown');
+                document.getElementById('modal-title').innerText = someString;
+            });
+
+            document.getElementById('open-button').addEventListener('click', () => {
+                document.querySelector('.modal-overlay').classList.add('shown');
+            })
+        </script>
+    </body>
+</html>

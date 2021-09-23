@@ -1,0 +1,80 @@
+{% assign groupMemberId = Workflow | Attribute:'GroupMemberId' %}
+
+{% groupmember where:'Id == {{ groupMemberId }}' limit:1 iterator:'members' %}
+    {% assign member = members[0] %}
+{% endgroupmember %}
+
+{% if member != null %}
+
+    {% assign groupId = Workflow | Attribute:'Campus','Object' | Attribute:'ServiceRsvpGroup','Id' %}
+    {% assign locationId = Workflow | Attribute:'Campus','LocationId' %}
+
+    {% sql group:'{{ groupId }}' location:'{{ locationId }}' return:'attendanceOccurrences' %}
+        SELECT
+            [Id]
+        FROM
+            [AttendanceOccurrence]
+        WHERE
+            [GroupId] = @group AND
+            [LocationId] = @location AND
+            [OccurrenceDate] = GETDATE()
+    {% endsql %}
+
+    {% assign attendanceOccurrencesSize = attendanceOccurrences | Size %}
+
+    {% if attendanceOccurrencesSize <= 0 %}
+        {% sql group:'{{ groupId }}' location:'{{ locationId }}' return:'attendanceOccurrences' %}
+            INSERT INTO [dbo].[AttendanceOccurrence]
+                (
+                    [GroupId],
+                    [LocationId],
+                    [OccurrenceDate],
+                    [Guid],
+                    [ShowDeclineReasons]
+                )
+            OUTPUT
+                Inserted.[Id]
+            VALUES
+                (
+                    @group,
+                    @location,
+                    GETDATE(),
+                    NEWID(),
+                    0
+                );
+        {% endsql %}
+    {% endif %}
+
+    {% assign attendanceOccurrencesSize = attendanceOccurrences | Size %}
+
+    {% if attendanceOccurrencesSize > 0 %}
+        {% assign occurrenceId = attendanceOccurrences[0].Id %}
+        {% assign campusId = Workflow | Attribute:'Campus','Id' %}
+        {% assign personAliasId = member.Person.PrimaryAliasId %}
+
+        {% sql occurrence:'{{ occurrenceId }}' campus:'{{ campusId }}' personAlias:'{{ personAliasId }}' return:'attendances' %}
+            INSERT INTO [dbo].[Attendance]
+                (
+                    [StartDateTime],
+                    [DidAttend],
+                    [Note],
+                    [Guid],
+                    [CampusId],
+                    [PersonAliasId],
+                    [OccurrenceId]
+                )
+            OUTPUT
+                Inserted.[Id]
+            VALUES
+                (
+                    GETDATE(),
+                    1,
+                    'Checked in with the RSVP system on the staff portal',
+                    NEWID(),
+                    @campus,
+                    @personAlias,
+                    @occurrence
+                );
+        {% endsql %}
+    {% endif %}
+{% endif %}

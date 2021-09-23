@@ -1,35 +1,20 @@
 <style>
-.panel-dashboard .panel-heading {
-    background-color: #00aada;
-    color: white
-}
+    .metric-container {
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+    }
 
-.panel-dashboard .panel-title {
-    font-size: 14px;
-    font-weight: bold;
-}
+    .metric-title {
+        background: lightblue;
+    }
 
-.panel-dashboard {
-    border: 1px solid #dbdbdb;
-    height: auto;
-    margin: 0 0 24px 0 !important;
-}
-
-.panel-dashboard i {
-    font-size: 50px;
-    float:left;
-    opacity: 0.5;
-    margin-top: 8px;
-}
-
-.panel-dashboard .metric-value {
-    font-size:45px;
-    float:right;
-    font-weight: bolder;
-}
+    .metric-report {
+        border-radius: 10px;
+    }
 </style>
 
-<div class="row" style="margin-top: 0;">
+<div class="d-flex justify-content-center align-items-center flex-wrap" style="margin-top: 0;">
 
     {% sql category:'{{ metricCategory }}' iterator:'metrics' %}
         SELECT
@@ -42,14 +27,17 @@
 
     {% for metric in results %}
         {% sql metricId:'{{ metric.Id }}' %}
-            SELECT TOP 1
+            SELECT TOP 2
                 m.Title as Title,
                 m.IconCssClass AS IconCssClass,
                 mv.[YValue] AS Value,
-                mv.[MetricValueDateTime]
+                mv.[MetricValueDateTime],
+                r.[Id] AS RelatedReportId
             FROM
                 [Metric] m
                 INNER JOIN [MetricValue] mv ON m.[Id] = mv.[MetricId]
+                LEFT JOIN [AttributeValue] av ON av.[EntityId] = m.[Id] AND av.[AttributeId] = 19694
+                LEFT JOIN [Report] r ON r.[Guid] = av.[Value]
             WHERE
                 m.[Id] = @metricId
             ORDER BY
@@ -59,18 +47,39 @@
         {% if results != empty %}
             {% assign value = results[0].Value %}
 
-            <div class="col-md-3">
-                <div class="panel-dashboard">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">{{ results[0].Title }}</h3>
-                    </div>
-                    <div class='panel-body'>
-                        <i class="{{ results[0].IconCssClass }} mr-5"></i>
-                        <span class="metric-value">
-                            {% if value && value != '' %} {{ value | Format:'#,##0' }} {% else %} <bolder>0</bolder> {% endif %}
-                        </span>
-                    </div>
+            {% assign resultsSize = results | Size %}
+            {% if resultsSize > 1 %}
+                {% assign prevValue = results[1].Value %}
+                {% assign delta = value | Minus:prevValue %}
+            {% else %}
+                {% assign prevValue = 0 %}
+            {% endif %}
+
+            <div class="metric-container m-2 px-3 py-1">
+                <h5>
+                    <i class="{{ results[0].IconCssClass }} mr-2"></i>
+                    {{ results[0].Title }}
+                </h5>
+                <div>
+                    <span class="metric-value m-2">
+                        {% if value && value != '' %} {{ value | Format:'#,##0' }} {% else %} <bolder>0</bolder> {% endif %}
+                    </span>
+                    <span class="metric-delta">
+                        {% if value > prevValue %}
+                            <span style="color: lightgreen;">+ {{ delta | Format:'#,##0' }}</span>
+                        {% elseif value < prevValue %}
+                            <span style="color: lightcoral;">{{ delta | Format:'#,##0' }}</span>
+                        {% else %}
+                            <span>+/- 0</span>
+                        {% endif %}
+                    </span>
                 </div>
+
+                {% if results[0].RelatedReportId > 0 %}
+                    <div class='btn btn-default btn-block metric-report' style="border: none;">
+                        <a class width:100% href="https://{{ 'Global' | Page:'Host' }}/page/{{ reportPage }}?ReportId={{ results[0].RelatedReportId }}">Related Report</a>
+                    </div>
+                {% endif %}
             </div>
         {% endif %}
     {% endfor %}
