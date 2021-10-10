@@ -1,4 +1,4 @@
--- counts the total attendance on previous wed for a given set of group type ids
+-- counts the total attendance on prev or THIS mon-fri for a given set of group type ids
 -- meant to be run thurs at midnight for a metric data view
 
 ------------------------------------------
@@ -8,7 +8,7 @@ INSERT INTO @groupTypeIds ([Id]) VALUES (108), (109), (110); -- GB - Nursery, GB
 ------------------------------------------
 
 DECLARE @lastSunday DATETIME = [dbo].ufnUtility_GetPreviousSundayDate();
-DECLARE @lastSaturday DATETIME = DATEADD(day, -1, [dbo].ufnUtility_GetPreviousSundayDate());
+DECLARE @thisFriday DATETIME = DATEADD(day, 5, [dbo].ufnUtility_GetPreviousSundayDate());
 
 SELECT
     pa.[PersonId]
@@ -20,6 +20,7 @@ FROM
 WHERE
     g.[GroupTypeId] IN (SELECT * FROM @groupTypeIds) AND
     (
-        ao.[OccurrenceDate] = @lastSunday OR
-        ao.[OccurrenceDate] = @lastSaturday
+        ao.[OccurrenceDate] > @lastSunday AND
+        ao.[OccurrenceDate] <= @thisFriday
     )
+    
