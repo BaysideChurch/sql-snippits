@@ -1,0 +1,20 @@
+
+{% assign last13Weeks = '' %}
+
+{% comment %} get weekend attendance {% endcomment %}
+{% assign weekendValues = '' %}
+
+{% comment %} get midweek attendance {% endcomment %}
+{% assign midweekValues = '' %}
+
+{% comment %} get cmp attendance {% endcomment %}
+{% assign cmpValues = '' %}
+
+<div>
+    <h3>Attendence</h3>
+    {[ chart type:'line' labels:'1/1/2017,2/1/2017,6/1/2017' xaxistype:'time' ]}
+        [[ dataset label:'Weekend' data:'12, 15, 34' fillcolor:'#4f7342' ]] [[ enddataset ]]
+        [[ dataset fillcolor:'rgba(255, 0, 0, 1)' label:'Midweek' data:'10, 22, 41' ]] [[ enddataset ]]
+        [[ dataset label:'Cmp' data:'5, 12, 21' fillcolor:'lightgreen' ]] [[ enddataset ]]
+    {[ endchart ]}
+</div>

@@ -1,0 +1,11 @@
+{% assign adOrgUnitId = 713319 %}
+{% assign boOrgUnitId = 713801 %}
+{% assign daOrgUnitId = 713802 %}
+{% assign foOrgUnitId = 713804 %}
+{% assign gbOrgUnitId = 713805 %}
+
+{% assign groupMembers = CurrentPerson | Group: "29",'All' %}
+
+<div class="">
+
+</div>
