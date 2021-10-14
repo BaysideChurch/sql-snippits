@@ -23,4 +23,3 @@ WHERE
         ao.[OccurrenceDate] > @lastSunday AND
         ao.[OccurrenceDate] <= @thisFriday
     )
-    
