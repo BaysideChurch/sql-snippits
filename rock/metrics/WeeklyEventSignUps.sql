@@ -25,4 +25,5 @@ FROM
 WHERE
     eic.[CampusId] = @campusId AND
     rr.[CreatedDateTime] > @weekBeforeLastSunday AND 
-    rr.[CreatedDateTime] <= @lastSunday
+    rr.[CreatedDateTime] <= @lastSunday AND
+    av.[Value] = @ministryGuid
