@@ -37,7 +37,7 @@
                 [Metric] m
                 INNER JOIN [MetricValue] mv ON m.[Id] = mv.[MetricId]
                 LEFT JOIN [AttributeValue] av ON av.[EntityId] = m.[Id] AND av.[AttributeId] = 19694
-                LEFT JOIN [Report] r ON r.[Guid] = av.[Value]
+                LEFT JOIN [Report] r ON r.[Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, av.[Value])
             WHERE
                 m.[Id] = @metricId
             ORDER BY
