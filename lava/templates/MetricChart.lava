@@ -1,0 +1,184 @@
+{% sql return:'metrics' %}
+    DECLARE @metricIds TABLE (Id INT);
+    INSERT INTO @metricIds VALUES (161);
+
+    DECLARE @lastMonday DATETIME = DATEADD(day, 1, [dbo].ufnUtility_GetPreviousSundayDate());
+
+    DECLARE @last12Mondays TABLE (Monday DATE);
+    INSERT INTO @last12Mondays VALUES
+    (@lastMonday),
+    (DATEADD(day, -7, @lastMonday)),
+    (DATEADD(day, -14, @lastMonday)),
+    (DATEADD(day, -21, @lastMonday)),
+    (DATEADD(day, -28, @lastMonday)),
+    (DATEADD(day, -35, @lastMonday)),
+    (DATEADD(day, -42, @lastMonday)),
+    (DATEADD(day, -49, @lastMonday)),
+    (DATEADD(day, -56, @lastMonday)),
+    (DATEADD(day, -63, @lastMonday)),
+    (DATEADD(day, -70, @lastMonday)),
+    (DATEADD(day, -77, @lastMonday));
+
+    SELECT * FROM
+    (
+        SELECT
+            TOP 12
+            [MetricId],{% sql return:'metrics' %}
+
+DECLARE @metricColorAttributeId INT = 21614;
+DECLARE @lastMonday DATETIME = DATEADD(day, 1, [dbo].ufnUtility_GetPreviousSundayDate());
+DECLARE @last12Mondays TABLE (Monday DATE);
+INSERT INTO @last12Mondays VALUES
+(DATEADD(day, -77, @lastMonday)),
+(DATEADD(day, -70, @lastMonday)),
+(DATEADD(day, -63, @lastMonday)),
+(DATEADD(day, -56, @lastMonday)),
+(DATEADD(day, -49, @lastMonday)),
+(DATEADD(day, -42, @lastMonday)),
+(DATEADD(day, -35, @lastMonday)),
+(DATEADD(day, -28, @lastMonday)),
+(DATEADD(day, -21, @lastMonday)),
+(DATEADD(day, -14, @lastMonday)),
+(DATEADD(day, -7, @lastMonday)),
+(@lastMonday);
+
+SELECT * FROM
+(
+    SELECT
+        TOP 12
+        v.[MetricId] AS [MetricId],
+        av.[Value] AS [MetricColor],
+        m.[Title] AS [Title],
+        STRING_AGG(v.[MetricValueDate], ',') AS [Dates],
+        STRING_AGG(v.[YValue], ',') AS [Values]
+    FROM
+        (
+            SELECT
+                TOP 50
+                [MetricId],
+                MAX([YValue]) AS YValue,
+                TRY_CONVERT(DATE, [MetricValueDateTime]) AS MetricValueDate
+            FROM
+                [MetricValue]
+             WHERE
+                [MetricId] IN ({{ metricIds }}) AND
+                TRY_CONVERT(DATE, [MetricValueDateTime]) IN (SELECT Monday FROM @last12Mondays)
+            GROUP BY
+                [MetricId],
+                [MetricValueDateTime]
+            ORDER BY
+                [MetricValueDateTime] ASC
+        ) [v]
+        LEFT JOIN [Metric] m ON m.[Id] = v.[MetricId]
+        LEFT JOIN [AttributeValue] av ON av.[EntityId] = m.[Id] AND av.[AttributeId] = @metricColorAttributeId
+    GROUP BY
+        v.[MetricId],
+        m.[Title],
+        av.[Value]
+    UNION ALL
+        SELECT
+            -1,
+            null,
+            null,
+            STRING_AGG(Monday, ','),
+            null
+        FROM
+            @last12Mondays
+) [batch]
+{% endsql %}
+
+{% for metric in metrics %}
+{% if metric.MetricId != -1 %}
+{% else %}
+    {% assign last12Mondays = metric.Dates %}
+    {% assign last12MondaysArr = metric.Dates | Split:',' %}
+{% endif %}
+{% endfor %}
+
+{[ chart type:'line' labels:'{{ last12Mondays }}' xaxistype:'time' ]}
+{% for metric in metrics %}
+{% if metric.MetricId != -1 %}
+    {% assign dates = metric.Dates | Split:',' %}
+    {% assign values = metric.Values | Split:',' %}
+
+    {% assign valuesStr = '' %}
+
+    {% for monday in last12MondaysArr %}
+        {% assign found = false %}
+
+        {% for d in dates %}
+            {% if d == monday and found == false %}
+                {% assign found = true %}
+
+                {% if valuesStr == '' %}
+                    {% capture valuesStr %}{{ values[forloop.index0] }}{% endcapture %}
+                {% else %}
+                    {% capture valuesStr %}{{ valuesStr }},{{ values[forloop.index0] }}{% endcapture %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+        {% if found == false %}
+            {% if valuesStr == '' %}
+                {% capture valuesStr %}0{% endcapture %}
+            {% else %}
+                {% capture valuesStr %}{{ valuesStr }},0{% endcapture %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+    [[ dataset bordercolor:'{{ metric.MetricColor }}' borderwidth:3 label:'{{ metric.Title }}' data:'{{ valuesStr }}' ]] [[ enddataset ]]
+
+{% endif %}
+{% endfor %}
+
+{[ endchart ]}
+
+<div>
+{% for metric in metrics %}
+    {% if metric.MetricId != -1 %}
+        <span class="m-2 p-2" style="border-radius: 10px; background: {{ metric.MetricColor | WithFallback:'','grey' }}; color: white;">{{ metric.Title }}</span>
+    {% endif %}
+{% endfor %}
+</div>
+            STRING_AGG(TRY_CONVERT(DATE, [MetricValueDateTime]), ',') AS [Dates],
+            STRING_AGG([YValue], ',') AS [Values]
+        FROM
+            [MetricValue]
+        WHERE
+            [MetricId] IN (SELECT Id FROM @metricIds) AND
+            TRY_CONVERT(DATE, [MetricValueDateTime]) IN (SELECT Monday FROM @last12Mondays)
+        GROUP BY
+            [MetricId]
+        UNION ALL
+            SELECT
+                -1,
+                STRING_AGG(Monday, ','),
+                null
+            FROM
+                @last12Mondays
+    ) [batch]
+{% endsql %}
+
+{% for metric in metrics %}
+    {% if metric.MetricId != -1 %}
+    {% else %}
+        {% assign last12Mondays = metric.Dates %}
+        {% assign last12MondaysArr = metric.Dates | Split:',' %}
+    {% endif %}
+{% endfor %}
+
+{[ chart type:'line' labels:'{{ last12Mondays }}' xaxistype:'time' ]}
+    [[ dataset bordercolor:'lightblue' borderwidth:3 label:'Weekend' data:'1,2,3,4,5,6,7,8,9,10,11,12' ]] [[ enddataset ]]
+    {% for metric in metrics %}
+        {% if metric.MetricId != -1 %}
+            {% assign dates = metric.Dates | Split:',' %}
+            {% assign values = metric.Values | Split:',' %}
+
+            {% for monday in last12MondaysArr %}
+
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+{[ endchart ]}
