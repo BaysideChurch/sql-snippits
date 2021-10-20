@@ -1,5 +1,10 @@
 <style>
     .metric-container {
+        display: grid;
+        grid: minmax(10px, min-content) / repeat(auto-fill, minmax(350px, 1fr));;
+    }
+
+    .metric-card {
         border-radius: 10px;
         background: white;
         box-shadow: 0 0 10px rgba(0, 0, 0, .1);
@@ -14,7 +19,7 @@
     }
 </style>
 
-<div class="d-flex justify-content-center align-items-center flex-wrap" style="margin-top: 0;">
+<div class="metric-container">
 
     {% sql category:'{{ metricCategory }}' iterator:'metrics' %}
         SELECT
@@ -55,7 +60,7 @@
                 {% assign prevValue = 0 %}
             {% endif %}
 
-            <div class="metric-container m-2 px-3 py-1">
+            <div class="metric-card m-2 px-3 py-1">
                 <h5>
                     <i class="{{ results[0].IconCssClass }} mr-2"></i>
                     {{ results[0].Title }}
