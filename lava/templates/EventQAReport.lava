@@ -1,0 +1,151 @@
+<style>
+    .ok {
+        background: lightgreen;
+    }
+
+    .warning {
+        background: lightyellow;
+    }
+
+    .error {
+        background: red;
+    }
+</style>
+
+{% assign PageIndex = PageParameter['Page'] %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+            <i class="fa fa-check"></i>
+            Event QA
+        </h2>
+    </div>
+    <div class="panel-body p-0">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Slug</th>
+                    <th>Group</th>
+                    <th>Event Item Ocurrence</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% registrationinstance where:'IsActive == true' iterator:'instances' %}
+
+                    {% assign instances = instances | OrderBy: 'CreatedDateTime desc' %}
+
+                    {% if PageIndex == empty or PageIndex < 1 %}
+                        {% assign PageIndex = '1' %}
+                    {% endif %}
+                    {% assign offsetRows = PageIndex | Minus: 1 | Times: 50 %}
+                    {% for instance in instances limit: 50 offset: offsetRows %}
+                        <tr>
+                            <td>
+                                <a href="https://{{ 'Global' | Page:'Host' }}/registrationinstance/{{ instance.Id }}">{{ instance.Name }}</a>
+                            </td>
+
+                            {% eventitemoccurrencegroupmap where:'RegistrationInstanceId == {{ instance.Id }}' iterator:'maps' %}
+                                {% assign linkages = maps %}
+                            {% endeventitemoccurrencegroupmap %}
+
+                            {% assign linkagesSize = linkages | Size %}
+
+                            {% if linkagesSize > 0 %}
+                                    <td>
+                                        {% for map in maps %}
+                                        {% assign slug = map.UrlSlug | WithFallback:'','' %}
+
+                                        {% if slug != '' %}
+                                            <span class="ok">{{ map.UrlSlug }}</span>
+                                            <br />
+                                        {% else %}
+                                            <a class="error">no slug</a>
+                                            <br />
+                                        {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for map in maps %}
+                                        {% assign group = map.Group %}
+
+                                        {% if group.Id > 0 %}
+                                            <span class="ok">{{ group.Name }}</span>
+                                            <br />
+                                        {% else %}
+                                            <span class="warning">no group</span>
+                                            <br />
+                                        {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for map in maps %}
+                                        {% assign eic = map.EventItemOccurrence %}
+
+                                        {% if eic.Id > 0 %}
+                                            {% if eic.Campus.Id > 0 %}
+                                                <span class="ok">{{ eic.Campus }}</span>
+                                            {% else %}
+                                                <span class="error">no campus</span>
+                                            {% endif %}
+
+                                            {% assign ministry = eic | Attribute:'Ministry' | WithFallback:'','' %}
+
+                                            {% if ministry != '' and ministry != 'General' %}
+                                                <span class="ok">{{ ministry }}</span>
+                                            {% else %}
+                                                <span class="error">no ministry</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="error">no occurrence</span>
+                                        {% endif %}
+                                        {% endfor %}
+                                        <br />
+                                    </td>
+                            {% else %}
+                                <td>No linkages</td>
+                                <td></td>
+                                <td></td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                {% endregistrationinstance %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% assign listLength = instances | Size %}
+{% assign remainingInstances = listLength | Minus: offsetRows %}
+{% unless PageIndex and PageIndex != empty %}
+    {% assign PageIndex = '1' %}
+{% endunless %}
+{% assign nextPage = PageIndex | Plus: 1 %}
+{% assign prevPage = PageIndex | Minus: 1 %}
+{% assign urlStringNext = "https://rock.bayside.church/page/1930?Page=" | Append: nextPage %}
+{% assign urlStringPrevious = "https://rock.bayside.church/page/1930?Page=" | Append: prevPage %}
+<ul class="pagination">
+    <li class="mr-1">
+        {%if PageIndex == 1 %}
+        <a class="btn btn-primary" style="opacity: 0.5; pointer-events: none;">
+            <span aria-hidden="true">&laquo;</span>
+        </a>
+        {% else %}
+        <a class="btn btn-primary" href={{ urlStringPrevious }}>
+            <span aria-hidden="true">&laquo;</span>
+        </a>
+        {% endif %}
+    </li>
+
+    <li class="ml-1">
+        {%if remainingInstances < 50 %}
+        <a class="btn btn-primary" style="opacity: 0.5; pointer-events: none;">
+            <span aria-hidden="true">&raquo;</span>
+        </a>
+        {% else %}
+        <a class="btn btn-primary" href={{ urlStringNext }} >
+            <span aria-hidden="true">&raquo;</span>
+        </a>
+        {% endif %}
+    </li>
+</ul>
