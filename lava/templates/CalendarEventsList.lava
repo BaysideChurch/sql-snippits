@@ -27,8 +27,8 @@
                             <img style="border-radius: 0px 0px 0px 0px;" src="/GetImage.ashx?Guid={{ eic.EventItem.Photo.Guid }}" class="title-image img-responsive" />
                         </center>
                 {% endif %}
-                <div class="align-items-center mx-sm-3 mb-2">
-                    <div class="row" style="padding-left: 15px;">
+                <div class="align-items-center mb-2">
+                    <div class="row">
                         <h3>{{ eic.EventItem.Name }}</h3>
                     </div>
 
@@ -69,7 +69,7 @@
                         </div>
                     </div>
 
-                    <div class="row ml-auto mt-3" style="padding-left: 15px;">
+                    <div class="row ml-auto mt-2">
                     {% if eic.DetailPage != null %}
                         <a class="btn btn-info btn-md" href="{{ eic.DetailPage }}">
                           View Details
