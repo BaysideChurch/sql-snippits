@@ -1,0 +1,49 @@
+{% assign person = PageParameter.PersonId | PersonById %}
+    {% assign firstName = person.FirstName %}
+    {% assign lastName = person.LastName %}
+    {% assign gender = person.Gender %}
+        {% if gender == 'Male' %}
+        {% assign gender = 1 %}
+        {% elseif gender == 'Female' %}
+        {% assign gender = 2 %}
+        {% else %}
+        {% assign gender = 0 %}
+        {% endif %}
+    {% assign birthDate = person.BirthDate %}
+    {% assign maritalStatus = person.MaritalStatusValue.Guid %}
+    {% assign mobilePhone = person | PhoneNumber:'Mobile' %}
+    {% assign homePhone = person | PhoneNumber:'Home' %}
+    {% assign email = person.Email %}
+    {% assign campus = person | Campus | Property:'Guid' %}
+    
+    {% assign p = person %}
+            {% grouplocation where:'GroupId == {{ p.PrimaryFamilyId }} && GroupLocationTypeValueId == 19' %}                                       
+            {% assign firstHomeLocation = grouplocationItems | First %}
+                {% assign address = firstHomeLocation.Location.Guid %}   
+            {% endgrouplocation %}
+    
+
+    {% capture OCCard %}
+    https://rock.bayside.church/WorkflowEntry/256?FirstName={{ firstName }}&LastName={{ lastName }}&Email={{ email }}&MobilePhone={{ mobilePhone }}
+    {% endcapture %}
+
+<div class="panel panel-block">
+    <div class="panel-heading">
+        <h1 class="panel-title"><i class="fa fa-clipboard"></i>Enter Connection Cards</h1>
+    </div>
+    <div class="panel-body">
+
+{[ accordion ]}
+
+[[ item title:'Campus Connect Cards' ]]
+    <ol>
+    <li><a href="{{ OCCard }}" target="_blank">Enter OC Connect Card</a></li>
+    </ol>
+[[ enditem ]]
+
+{[ endaccordion ]}
+    </div>
+    
+    
+    
+</div>
