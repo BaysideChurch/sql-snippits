@@ -1,0 +1,53 @@
+{% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
+
+<div id="error-target">
+    {% if error != '' %}
+        <div class="alert alert-danger">
+            <h3 class="mt-0">Error</h3>
+            <p>{{ error }}</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    /*
+     * this script calculates the price on the client side. note that the real price is calculated in a workflow action below.
+     */
+
+    function calculatePrice(width, height, quantity) {
+        return width * height * quantity * 0.0022;
+    }
+
+    function handleInput() {
+        const widthInput = document.querySelector("input[name*=attribute_field_25641]");
+        const heightInput = document.querySelector("input[name*=attribute_field_25642]");
+        const quantityInput = document.querySelector("input[name*=attribute_field_25629]");
+        const priceTarget = document.getElementById("price-target");
+
+        price = calculatePrice(
+            widthInput.value,
+            heightInput.value,
+            quantityInput.value
+        );
+
+        // Create our number formatter.
+        var formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        });
+
+        priceTarget.innerText = formatter.format(price);
+    }
+
+    $(document).ready(function() {
+        const widthInput = document.querySelector("input[name*=attribute_field_25641]");
+        const heightInput = document.querySelector("input[name*=attribute_field_25642]");
+        const quantityInput = document.querySelector("input[name*=attribute_field_25629]");
+
+        widthInput.addEventListener("input", handleInput);
+        heightInput.addEventListener("input", handleInput);
+        quantityInput.addEventListener("input", handleInput);
+
+        handleInput(); // fill in price on page load
+    });
+</script>
