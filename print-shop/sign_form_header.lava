@@ -1,5 +1,9 @@
 {% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
 
+<div class="text-align-center">
+    <h1>Sign</h1>
+</div>
+
 <script>
     /*
      * this script calculates the price on the client side. note that the real price is calculated in a workflow action below.
@@ -28,22 +32,6 @@
         }
 
         return price;
-    }
-
-    function addListenerToSelector(selector, eventName) {
-        const elem = document.querySelector(selector);
-
-        if (elem)
-            elem.addEventListener(eventName, handleInput);
-    }
-
-    function addAllListeners() {
-        addListenerToSelector("select[name*=attribute_field_25651]", "change");
-        addListenerToSelector("input[name*=attribute_field_25664]", "change");
-        addListenerToSelector("input[name*=attribute_field_25666]", "change");
-        addListenerToSelector("input[name*=attribute_field_25659]", "input");
-        addListenerToSelector("input[name*=attribute_field_25660]", "input");
-        addListenerToSelector("input[name*=attribute_field_25652]", "input");
     }
 
     function handleInput() {
@@ -107,12 +95,30 @@
         messageContainer.innerHTML = messageContainer.innerHTML +  "{{ error }}";
     }
 
+    function addListenerToSelector(selector, eventName) {
+        const elem = document.querySelector(selector);
+
+        console.log(elem);
+
+        if (elem)
+            elem.addEventListener(eventName, handleInput);
+    }
+
+    function addAllListeners() {
+        addListenerToSelector("select[name*=attribute_field_25651]", "change");
+        addListenerToSelector("input[name*=attribute_field_25664]", "change");
+        addListenerToSelector("input[name*=attribute_field_25666]", "change");
+        addListenerToSelector("input[name*=attribute_field_25659]", "input");
+        addListenerToSelector("input[name*=attribute_field_25660]", "input");
+        addListenerToSelector("input[name*=attribute_field_25652]", "input");
+    }
+
     $(document).ready(function() {
-        const observer = new MutationObserver(function(mutations_list) {
+        const observer = new MutationObserver(function(mutations) {
             addAllListeners();
         });
 
-        observer.observe(document.querySelector(".workflow-entry-panel"), { subtree: false, childList: true });
+        observer.observe(document.querySelector(".workflow-entry-panel"), { subtree: true, childList: true });
 
         addAllListeners();
         handleInput(); // fill in price on page load

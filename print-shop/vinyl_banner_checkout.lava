@@ -1,0 +1,67 @@
+{% assign material = Workflow | Attribute:'Material' %}
+
+<div>
+  <h3 class="text-center">Review Your Order</h3>
+  <div style="max-width: 800px">
+
+    <div class="row">
+      <div class="col-md-4">
+        <p class="font-weight-bold">Item</p>
+        <p>
+          {{ material }} {{ Workflow | Attribute:'Width' }}" x {{ Workflow | Attribute:'Height' }}"
+          <ul>
+            <li>
+              Pole Pockets: {{ Workflow | Attribute:'PolePockets' }}
+            </li>
+
+            {% assign grommets = Workflow | Attribute:'Grommets' %}
+
+            {% if grommets == "Yes" %}
+              <li>
+                Grommets: { Workflow | Attribute:'GrommetType' }} - {{ Workflow | Attribute:'GrommetLocation' }}
+              </li>
+            {% else %}
+              <li>
+                Grommets: No
+              </li>
+            {% endif %}
+          </ul>
+        </p>
+      </div>
+      <div class="col-md-4">
+        <p class="font-weight-bold">Quantity</p>
+        <p>
+          {{ Workflow | Attribute:'Quantity' }}
+        </p>
+      </div>
+      <div class="col-md-4">
+        <p class="font-weight-bold">Price</p>
+        <p>
+          {{ Workflow | Attribute:'Price' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4">
+        <p class="font-weight-bold">Due-Date</p>
+        <p>
+          {{ Workflow | Attribute:'DueDate' }}
+        </p>
+      </div>
+      <div class="col-md-4">
+        <p class="font-weight-bold">Email</p>
+        <p>
+          {{ Workflow | Attribute:'Email' }}
+        </p>
+      </div>
+      <div class="col-md-4">
+        <p class="font-weight-bold">Notes</p>
+        <p>
+          {{ Workflow | Attribute:'Notes' }}
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>

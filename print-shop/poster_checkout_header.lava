@@ -1,0 +1,48 @@
+<div>
+    <h3 class="text-center">Review Your Order</h3>
+    <div style="max-width: 800px">
+
+        <div class="row">
+            <div class="col-md-4">
+                <p class="font-weight-bold">Item</p>
+                <p>
+                    {{ Workflow | Attribute:'Material' }} {{ Workflow | Attribute:'Width' }}" x {{ Workflow | Attribute:'Height' }}"
+                </p>
+            </div>
+            <div class="col-md-4">
+                <p class="font-weight-bold">Quantity</p>
+                <p>
+                    {{ Workflow | Attribute:'Quantity' }}
+                </p>
+            </div>
+            <div class="col-md-4">
+                <p class="font-weight-bold">Quantity</p>
+                <p>
+                    {{ Workflow | Attribute:'Price' }}
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <p class="font-weight-bold">Due-Date</p>
+                <p>
+                    {{ Workflow | Attribute:'DueDate' }}
+                </p>
+            </div>
+            <div class="col-md-4">
+                <p class="font-weight-bold">Email</p>
+                <p>
+                    {{ Workflow | Attribute:'Email' }}
+                </p>
+            </div>
+            <div class="col-md-4">
+                <p class="font-weight-bold">Notes</p>
+                <p>
+                    {{ Workflow | Attribute:'Notes' }}
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>

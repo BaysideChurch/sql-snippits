@@ -1,0 +1,6 @@
+<div>
+  <p>
+    <span class="font-weight-bold">Estimated Price:</span>
+    <span id="price-target"></span>
+  </p>
+</div>
