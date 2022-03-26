@@ -1,0 +1,118 @@
+<div class="text-align-center">
+  <h1>Business Cards</h1>
+</div>
+
+<script>
+  /*
+   * this script calculates the price on the client side. note that the real
+   * price is calculated in a workflow action below.
+   */
+
+  {% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
+
+  $(document).ready(function() {
+    addMainObserver();
+    addAllListeners();
+    handleInput(); // fill in price on page load
+
+    // add validation errors to validation container
+    if ("{{ error }}".length > 0)
+      addValidationErrors();
+  });
+
+  // adds the main observer that will re-add the listeners if the form changes
+  function addMainObserver() {
+    const observer = new MutationObserver(function(mutations) {
+      addAllListeners();
+      handleInput(); // fill in price
+    });
+
+    observer.observe(document.querySelector(".workflow-entry div[id*=upnlContent]"), { subtree: false, childList: true });
+  }
+
+  // add all the listeners to the form fields that control price
+  function addAllListeners() {
+    addListenerToSelector("select[name*=attribute_field_27303]", "change");
+    addListenerToSelector("input[name*=attribute_field_27294]", "input");
+  }
+
+  // creates validation error panel and adds custom validation messages to it
+  function addValidationErrors() {
+    let container = document.querySelector(".workflow-entry-panel .alert.alert-validation");
+
+    // create container if it doesn't exist
+    if (!container) {
+      container = document.createElement("div");
+      container.className = "alert alert-validation";
+      container.innerHTML = `
+        Please correct the following:
+        <ul>
+        </ul>
+      `;
+
+      document.querySelector(".workflow-entry-panel").prepend(container);
+    }
+
+    // add the message container if it doesn't exist
+    let messageContainer = container.querySelector("ul");
+
+    if (!messageContainer) {
+      container.innerHTML = `
+        Please correct the following:
+        <ul>
+        </ul>
+      `;
+
+      messageContainer = container.querySelector("ul");
+    }
+
+    container.style.display = null;
+
+    messageContainer.innerHTML = messageContainer.innerHTML +  "{{ error }}";
+  }
+
+  // use this function to add listeners to inputs and select boxes
+  function addListenerToSelector(selector, eventName, multiple = false) {
+    if (multiple)
+      document.querySelectorAll(selector).forEach((elem) => {
+        elem.addEventListener(eventName, handleInput);
+      });
+
+    const elem = document.querySelector(selector);
+
+    console.log(elem);
+
+    if (elem)
+      elem.addEventListener(eventName, handleInput);
+  }
+
+  function calculatePrice(material, quantity) {
+    let price = 0.0;
+
+    if (material == "gloss")
+      price = quantity * 0.47;
+    else if (material == "nongloss")
+      price = quantity * 0.23485;
+
+    return price;
+  }
+
+  function handleInput() {
+    const materialInput = document.querySelector("select[name*=attribute_field_27303]");
+    const quantityInput = document.querySelector("input[name*=attribute_field_27294]");
+    const priceTarget = document.getElementById("price-target");
+
+    price = calculatePrice(
+        materialInput.value,
+        quantityInput.value
+    );
+
+    // Create our number formatter.
+    var formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    });
+
+    priceTarget.innerText = formatter.format(price);
+  }
+</script>
