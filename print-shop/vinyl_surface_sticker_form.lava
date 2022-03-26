@@ -1,11 +1,11 @@
 <div class="text-align-center">
-  <h1>Vinyl Banner</h1>
+  <h1>Vinyl Surface Sticker</h1>
 </div>
 
 <script>
   /*
-   * this script calculates the price on the client side. note that the real price
-   * is calculated in a workflow action below.
+   * this script calculates the price on the client side. note that the real
+   * price is calculated in a workflow action below.
    */
 
   {% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
@@ -30,39 +30,11 @@
     observer.observe(document.querySelector(".workflow-entry div[id*=upnlContent]"), { subtree: false, childList: true });
   }
 
-  // calculates the price of this item
-  function calculatePrice(width, height, quantity, polePockets) {
-    let price = width * height * quantity * 0.022;
-
-    if (polePockets.toLowerCase() == "true") {
-      price += price * 0.75;
-    }
-
-    return price;
-  }
-
-  // gets data out of inputs and formats price for DOM
-  function handleInput() {
-    const widthInput = document.querySelector("input[name*=attribute_field_25683]");
-    const heightInput = document.querySelector("input[name*=attribute_field_25684]");
-    const quantityInput = document.querySelector("input[name*=attribute_field_25676]");
-    const polePocketsInput = document.querySelector("input[name*=attribute_field_25688]");
-    const priceTarget = document.getElementById("price-target");
-
-    price = calculatePrice(
-      widthInput.value,
-      heightInput.value,
-      quantityInput.value,
-      polePocketsInput.value
-    );
-
-    // Create our number formatter.
-    var formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    });
-
-    priceTarget.innerText = formatter.format(price);
+  // add all the listeners to the form fields that control price
+  function addAllListeners() {
+    addListenerToSelector("input[name*=attribute_field_25704]", "input");
+    addListenerToSelector("input[name*=attribute_field_25705]", "input");
+    addListenerToSelector("input[name*=attribute_field_25697]", "input");
   }
 
   // creates validation error panel and adds custom validation messages to it
@@ -115,28 +87,28 @@
       elem.addEventListener(eventName, handleInput);
   }
 
-  // use this function to listen for clicks on toggles
-  function addMutationObserverToSelector(selector) {
-    const toggle = document.querySelector(selector);
+  function calculatePrice(width, height, quantity) {
+    return width * height * quantity * 0.02;
+  }
 
-    const observer = new MutationObserver(function(mutations) {
-      for (const mutation of mutations) {
-        if (mutation.type == "attributes" && mutation.attributeName == "value") {
-          handleInput();
-        }
-      }
+  function handleInput() {
+    const widthInput = document.querySelector("input[name*=attribute_field_25704]");
+    const heightInput = document.querySelector("input[name*=attribute_field_25705]");
+    const quantityInput = document.querySelector("input[name*=attribute_field_25697]");
+    const priceTarget = document.getElementById("price-target");
+
+    price = calculatePrice(
+      widthInput.value,
+      heightInput.value,
+      quantityInput.value
+    );
+
+    // Create our number formatter.
+    var formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
     });
 
-    observer.observe(toggle, { subtree: true, childList: true, attributes: true });
+    priceTarget.innerText = formatter.format(price);
   }
-
-  // add all the listeners to the form fields that control price
-  function addAllListeners() {
-    addListenerToSelector("input[name*=attribute_field_25683]", "input");
-    addListenerToSelector("input[name*=attribute_field_25684]", "input");
-    addListenerToSelector("input[name*=attribute_field_25676]", "input");
-    addListenerToSelector("input[name*=attribute_field_25688]", "input");
-    addMutationObserverToSelector("input[id*=attribute_field_25688]");
-  }
-
 </script>
