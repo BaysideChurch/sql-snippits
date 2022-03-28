@@ -93,9 +93,9 @@
     let price = 0.0;
 
     if (material == "100lb Matt Paper Stock")
-      price = width * height * quantity * 0.44;
+      price = quantity * 0.44;
     else if (material == "80lb Matt Cover Stock")
-      price = width * height * quantity * 0.47;
+      price = quantity * 0.47;
 
     price += (folds * 0.01) * quantity;
 

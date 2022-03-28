@@ -32,8 +32,6 @@
 
   // add all the listeners to the form fields that control price
   function addAllListeners() {
-    addListenerToSelector("input[name*=attribute_field_27321]", "input");
-    addListenerToSelector("input[name*=attribute_field_27322]", "input");
     addListenerToSelector("input[name*=attribute_field_27314]", "input");
   }
 
@@ -87,25 +85,15 @@
       elem.addEventListener(eventName, handleInput);
   }
 
-  function calculatePrice(material, quantity) {
-    let price = 0.0;
-
-    if (material == "gloss")
-      price = quantity * 0.47;
-    else if (material == "nongloss")
-      price = quantity * 0.23485;
-
-    return price;
+  function calculatePrice(quantity) {
+    return quantity * 0.81;
   }
 
   function handleInput() {
-    const quantityInput = document.querySelector("input[name*=attribute_field_27321]");
-    const quantityInput = document.querySelector("input[name*=attribute_field_27322]");
     const quantityInput = document.querySelector("input[name*=attribute_field_27314]");
     const priceTarget = document.getElementById("price-target");
 
     price = calculatePrice(
-        materialInput.value,
         quantityInput.value
     );
 
