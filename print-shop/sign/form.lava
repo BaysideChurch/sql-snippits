@@ -1,130 +1,145 @@
-{% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
-
 <div class="text-align-center">
-    <h1>Sign</h1>
+  <h1>Sign</h1>
 </div>
 
 <script>
-    /*
-     * this script calculates the price on the client side. note that the real price is calculated in a workflow action below.
-     */
+  /*
+   * this script calculates the price on the client side. note that the real
+   * price is calculated in a workflow action below.
+   */
 
-    function calculatePrice(width, height, quantity, material, hstakes, doubleSided) {
-        const widthHeightQty = width * height * quantity;
-        let price = 0.0;
+  {% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
 
-        if (material == "White Corrugated Board") {
-            price = widthHeightQty * 0.0027;
+  $(document).ready(function() {
+    addMainObserver();
+    addAllListeners();
+    handleInput(); // fill in price on page load
 
-            // each h-stake costs a dollar
-            if (hstakes == "true") {
-                price += 1 * quantity;
-            }
-        } else if (material == "Foamcore") {
-            price = widthHeightQty * 0.0026;
-        } else if (material == "Aluminum Diabond") {
-            price = widthHeightQty * 0.056;
-        }
+    // add validation errors to validation container
+    if ("{{ error }}".length > 0)
+      addValidationErrors();
+  });
 
-        // add 20% for double-sided
-        if (doubleSided == "true") {
-            price = price * 1.20;
-        }
-
-        return price;
-    }
-
-    function handleInput() {
-        const materialInput = document.querySelector("select[name*=attribute_field_25651]");
-        const hstakeInput = document.querySelector("input[name*=attribute_field_25664]");
-        const doubleSidedInput =  document.querySelector("input[name*=attribute_field_25666]");
-        const widthInput = document.querySelector("input[name*=attribute_field_25659]");
-        const heightInput = document.querySelector("input[name*=attribute_field_25660]");
-        const quantityInput = document.querySelector("input[name*=attribute_field_25652]");
-        const priceTarget = document.getElementById("price-target");
-
-        price = calculatePrice(
-            widthInput.value,
-            heightInput.value,
-            quantityInput.value,
-            materialInput.value,
-            hstakeInput ? hstakeInput.value : "false",
-            doubleSidedInput.value
-        );
-
-        // Create our number formatter.
-        var formatter = new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        });
-
-        priceTarget.innerText = formatter.format(price);
-    }
-
-    function addValidationErrors() {
-        let container = document.querySelector(".workflow-entry-panel .alert.alert-validation");
-
-        // create container if it doesn't exist
-        if (!container) {
-            container = document.createElement("div");
-            container.className = "alert alert-validation";
-            container.innerHTML = `
-                Please correct the following:
-                <ul>
-                </ul>
-            `;
-
-            document.querySelector(".workflow-entry-panel").prepend(container);
-        }
-
-        // add the message container if it doesn't exist
-        let messageContainer = container.querySelector("ul");
-
-        if (!messageContainer) {
-            container.innerHTML = `
-                Please correct the following:
-                <ul>
-                </ul>
-            `;
-
-            messageContainer = container.querySelector("ul");
-        }
-
-        container.style.display = null;
-
-        messageContainer.innerHTML = messageContainer.innerHTML +  "{{ error }}";
-    }
-
-    function addListenerToSelector(selector, eventName) {
-        const elem = document.querySelector(selector);
-
-        console.log(elem);
-
-        if (elem)
-            elem.addEventListener(eventName, handleInput);
-    }
-
-    function addAllListeners() {
-        addListenerToSelector("select[name*=attribute_field_25651]", "change");
-        addListenerToSelector("input[name*=attribute_field_25664]", "change");
-        addListenerToSelector("input[name*=attribute_field_25666]", "change");
-        addListenerToSelector("input[name*=attribute_field_25659]", "input");
-        addListenerToSelector("input[name*=attribute_field_25660]", "input");
-        addListenerToSelector("input[name*=attribute_field_25652]", "input");
-    }
-
-    $(document).ready(function() {
-        const observer = new MutationObserver(function(mutations) {
-            addAllListeners();
-        });
-
-        observer.observe(document.querySelector(".workflow-entry-panel"), { subtree: true, childList: true });
-
-        addAllListeners();
-        handleInput(); // fill in price on page load
-
-        // add validation errors to validation container
-        if ("{{ error }}".length > 0)
-            addValidationErrors();
+  // adds the main observer that will re-add the listeners if the form changes
+  function addMainObserver() {
+    const observer = new MutationObserver(function(mutations) {
+      addAllListeners();
+      handleInput(); // fill in price
     });
+
+    observer.observe(document.querySelector(".workflow-entry div[id*=upnlContent]"), { subtree: false, childList: true });
+  }
+
+  // add all the listeners to the form fields that control price
+  function addAllListeners() {
+    addListenerToSelector("select[name*=attribute_field_25651]", "change"); // material
+    addListenerToSelector("input[name*=attribute_field_25659]", "input");   // width
+    addListenerToSelector("input[name*=attribute_field_25660]", "input");   // height
+    addListenerToSelector("input[name*=attribute_field_25652]", "input");   // quantity
+    addListenerToSelector("select[name*=attribute_field_25666]", "input");  // double sided
+    addListenerToSelector("select[name*=attribute_field_25664]", "input");  // hstake
+  }
+
+  // creates validation error panel and adds custom validation messages to it
+  function addValidationErrors() {
+    let container = document.querySelector(".workflow-entry-panel .alert.alert-validation");
+
+    // create container if it doesn't exist
+    if (!container) {
+      container = document.createElement("div");
+      container.className = "alert alert-validation";
+      container.innerHTML = `
+        Please correct the following:
+        <ul>
+        </ul>
+      `;
+
+      document.querySelector(".workflow-entry-panel").prepend(container);
+    }
+
+    // add the message container if it doesn't exist
+    let messageContainer = container.querySelector("ul");
+
+    if (!messageContainer) {
+      container.innerHTML = `
+        Please correct the following:
+        <ul>
+        </ul>
+      `;
+
+      messageContainer = container.querySelector("ul");
+    }
+
+    container.style.display = null;
+
+    messageContainer.innerHTML = messageContainer.innerHTML +  "{{ error }}";
+  }
+
+  // use this function to add listeners to inputs and select boxes
+  function addListenerToSelector(selector, eventName, multiple = false) {
+    if (multiple)
+      document.querySelectorAll(selector).forEach((elem) => {
+        elem.addEventListener(eventName, handleInput);
+      });
+
+    const elem = document.querySelector(selector);
+
+    console.log(elem);
+
+    if (elem)
+      elem.addEventListener(eventName, handleInput);
+  }
+
+  function calculatePrice(width, height, quantity, material, hstake, doubleSided) {
+    const widthHeightQty = width * height * quantity;
+    let price = 0.0;
+
+    if (material == "White Corrugated Board") {
+      price = widthHeightQty * 0.0027;
+
+      // each h-stake costs a dollar
+      if (hstake)
+        price += 1 * quantity;
+
+    } else if (material == "Foamcore")
+        price = widthHeightQty * 0.0026;
+
+    else if (material == "Aluminum Diabond")
+        price = widthHeightQty * 0.056;
+
+    // add 20% for double-sided
+    if (doubleSided)
+        price = price * 1.20;
+
+    console.log(`calculating: ${price}`);
+
+    return price;
+  }
+
+  function handleInput() {
+    const materialInput = document.querySelector("select[name*=attribute_field_25651]");
+    const widthInput = document.querySelector("input[name*=attribute_field_25659]");
+    const heightInput = document.querySelector("input[name*=attribute_field_25660]");
+    const quantityInput = document.querySelector("input[name*=attribute_field_25652]");
+    const doubleSidedInput =  document.querySelector("select[name*=attribute_field_25666]");
+    const hstakeInput = document.querySelector("select[name*=attribute_field_25664]");
+    const priceTarget = document.getElementById("price-target");
+
+    price = calculatePrice(
+      widthInput.value,
+      heightInput.value,
+      quantityInput.value,
+      materialInput.value,
+      hstakeInput ? hstakeInput.value == "True" : false,
+      doubleSidedInput ? doubleSidedInput.value == "True" : false
+    );
+
+    // Create our number formatter.
+    var formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    });
+
+    priceTarget.innerText = formatter.format(price);
+  }
 </script>
