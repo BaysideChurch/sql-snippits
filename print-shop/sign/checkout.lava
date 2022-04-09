@@ -39,9 +39,8 @@
             {% endif %}
 
             {% if material == "Aluminum Diabond" %}
-              {% comment %}TODO: holes{% endcomment %}
               <li>
-                Holes: TODO:
+                Holes: TODO
               </li>
             {% endif %}
           </ul>
