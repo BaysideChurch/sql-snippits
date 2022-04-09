@@ -1,6 +1,6 @@
 <div>
     <h3 class="text-center">Review Your Order</h3>
-    <div style="max-width: 800px">
+    <div style="max-width: 800px; margin: auto;">
 
         <div class="row">
             <div class="col-md-4">
