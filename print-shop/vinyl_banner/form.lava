@@ -16,7 +16,7 @@
     handleInput(); // fill in price on page load
 
     // add validation errors to validation container
-    if ("{{ error }}".length > 0)
+    if (`{{ error }}`.length > 0)
       addValidationErrors();
   });
 
@@ -31,12 +31,8 @@
   }
 
   // calculates the price of this item
-  function calculatePrice(width, height, quantity, polePockets) {
+  function calculatePrice(width, height, quantity) {
     let price = width * height * quantity * 0.022;
-
-    if (polePockets.toLowerCase() == "true") {
-      price += price * 0.75;
-    }
 
     return price;
   }
@@ -46,14 +42,12 @@
     const widthInput = document.querySelector("input[name*=attribute_field_25683]");
     const heightInput = document.querySelector("input[name*=attribute_field_25684]");
     const quantityInput = document.querySelector("input[name*=attribute_field_25676]");
-    const polePocketsInput = document.querySelector("input[name*=attribute_field_25688]");
     const priceTarget = document.getElementById("price-target");
 
     price = calculatePrice(
       widthInput.value,
       heightInput.value,
-      quantityInput.value,
-      polePocketsInput.value
+      quantityInput.value
     );
 
     // Create our number formatter.
@@ -97,7 +91,7 @@
 
     container.style.display = null;
 
-    messageContainer.innerHTML = messageContainer.innerHTML +  "{{ error }}";
+    messageContainer.innerHTML = messageContainer.innerHTML +  `{{ error }}`;
   }
 
   // use this function to add listeners to inputs and select boxes
@@ -135,8 +129,6 @@
     addListenerToSelector("input[name*=attribute_field_25683]", "input");
     addListenerToSelector("input[name*=attribute_field_25684]", "input");
     addListenerToSelector("input[name*=attribute_field_25676]", "input");
-    addListenerToSelector("input[name*=attribute_field_25688]", "input");
-    addMutationObserverToSelector("input[id*=attribute_field_25688]");
   }
 
 </script>

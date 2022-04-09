@@ -2,7 +2,7 @@
 
 <div>
   <h3 class="text-center">Review Your Order</h3>
-  <div style="max-width: 800px">
+  <div style="max-width: 800px; margin: auto;">
 
     <div class="row">
       <div class="col-md-4">
@@ -10,15 +10,11 @@
         <p>
           {{ material }} {{ Workflow | Attribute:'Width' }}" x {{ Workflow | Attribute:'Height' }}"
           <ul>
-            <li>
-              Pole Pockets: {{ Workflow | Attribute:'PolePockets' }}
-            </li>
-
             {% assign grommets = Workflow | Attribute:'Grommets' %}
 
             {% if grommets == "Yes" %}
               <li>
-                Grommets: { Workflow | Attribute:'GrommetType' }} - {{ Workflow | Attribute:'GrommetLocation' }}
+                Grommets: {{ Workflow | Attribute:'GrommetType' }} - {{ Workflow | Attribute:'GrommetLocation' }}
               </li>
             {% else %}
               <li>
