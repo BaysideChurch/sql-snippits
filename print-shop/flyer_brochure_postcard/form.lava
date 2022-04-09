@@ -16,7 +16,7 @@
     handleInput(); // fill in price on page load
 
     // add validation errors to validation container
-    if ("{{ error }}".length > 0)
+    if (`{{ error }}`.length > 0)
       addValidationErrors();
   });
 
@@ -71,7 +71,7 @@
 
     container.style.display = null;
 
-    messageContainer.innerHTML = messageContainer.innerHTML +  "{{ error }}";
+    messageContainer.innerHTML = messageContainer.innerHTML +  `{{ error }}`;
   }
 
   // use this function to add listeners to inputs and select boxes
