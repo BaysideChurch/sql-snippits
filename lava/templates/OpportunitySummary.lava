@@ -1,0 +1,120 @@
+{% assign CurrentPersonId = CurrentPerson.Id %}
+
+{% comment %} get a list of campuses of which the person is a member {% endcomment %}
+{% sql %}
+SELECT
+    STRING_AGG(CONVERT(varchar(10), y.[CampusId]), ',') As [CampusMembership]
+FROM
+    (
+    SELECT
+        c.[Id] As [CampusId]
+    FROM
+        [Campus] c
+        CROSS APPLY
+        (
+            SELECT
+                av.[Value]
+            FROM
+                [Attribute] a
+                INNER JOIN [AttributeValue] av ON av.[AttributeId] = a.[Id]
+            WHERE
+                a.[Key] = 'PermissionChartGroup'
+                AND av.[EntityId] = c.[Id]
+        )x
+    WHERE
+        EXISTS
+        (
+            SELECT g.[Id]
+            FROM
+                [Person] p
+                INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
+                INNER JOIN [Group] g On g.[Id] = gm.[GroupId]
+            WHERE
+                g.[Guid] = x.[Value]
+                AND p.[Id] = {{ CurrentPersonId }}
+        )
+    )y
+{% endsql %}
+
+{% for item in results %}
+    {% assign campusMembership = item.CampusMembership %}
+{% endfor %}
+
+{% comment %} if person is not a member of any campus, then get a list of all active campuses {% endcomment %}
+{% if campusMembership == null %}
+    {% for campus in Campuses %}
+        {% if campus.IsActive %}
+            {% assign campusMembership = campusMembership | Append:',' | Append:campus.Id %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% comment %} get counts of old, active, new, and closed connections of listed campuses {% endcomment %}
+{% sql %}
+SELECT
+    SUM( CASE
+        WHEN y.[ConnectionState] IN ('Active', 'FutureFollowUp') AND y.[CreatedDateTime] <= DATEADD(month, -1, GETDATE()) THEN 1
+        ELSE 0 END
+        ) AS [OldConnections]
+    ,SUM( CASE
+        WHEN y.[ConnectionState] IN ('Active', 'FutureFollowUp') AND y.[CreatedDateTime] <= DATEADD(day, -7, GETDATE()) AND y.[CreatedDateTime] > DATEADD(month, -1, GETDATE()) THEN 1
+        ELSE 0 END
+        ) AS [ActiveConnections]
+    ,SUM( CASE
+        WHEN y.[ConnectionState] IN ('Active', 'FutureFollowUp') AND y.[CreatedDateTime] > DATEADD(day, -7, GETDATE()) THEN 1
+        ELSE 0 END
+        ) AS [NewConnections]
+    ,SUM( CASE
+        WHEN y.ConnectionState IN ('Connected', 'Inactive') THEN 1
+        ELSE 0 END
+        ) AS [ClosedConnections]
+    ,MAX(y.[TotalCount])
+FROM
+(
+    SELECT
+        x.[ConnectionState]
+        ,COUNT(*) over(partition by x.[ConnectionState]) AS [StateCount]
+        ,x.[CreatedDateTime]
+        ,COUNT(*) over() AS [TotalCount]
+    FROM
+    (
+        SELECT
+            cr.[Id]
+            ,CASE cr.[ConnectionState]
+            WHEN 0 THEN 'Active'
+            WHEN 1 THEN 'Inactive'
+            WHEN 2 THEN 'FutureFollowUp'
+            WHEN 3 THEN 'Connected'
+            END AS [ConnectionState]
+            ,cr.[ConnectionStatusId]
+            ,cs.[Name] AS [Connection Status Name]
+            ,cr.[CreatedDateTime]
+        FROM
+            [ConnectionRequest] cr
+            INNER JOIN [ConnectionStatus] cs On cr.[ConnectionStatusId] = cs.[Id]
+        WHERE
+            cr.[CampusId] IN ( {{ campusMembership }} )
+            AND cr.[ConnectionOpportunityId] = {{ ConnectionOpportunity.Id }}
+    )x
+    )y
+{% endsql %}
+
+{% for item in results %}
+    {% assign oldConnections = item.OldConnections %}
+    {% assign activeConnections = item.ActiveConnections %}
+    {% assign newConnections = item.NewConnections %}
+    {% assign closedConnections = item.ClosedConnections %}
+{% endfor %}
+
+{% comment %} display opportunity summary {% endcomment %}
+<i class='{{ OpportunitySummary.IconCssClass }}'></i>
+<h3>{{ OpportunitySummary.Name }}</h3>
+<div class='status-list'>
+    {% if OpportunitySummary.AssignedToYou > 0 %}
+    <span class='badge badge-critical' style="position: absolute; top: -0.5rem; left: -0.5rem;">{{ OpportunitySummary.AssignedToYou | Format:'#,###,###' }} Assigned</span>
+    {% endif %}
+    <span class='badge badge-success'>{{ newConnections | Format:'#,###,###' }}</span>
+    <span class='badge badge-warning'>{{ activeConnections | Format:'#,###,###' }}</span>
+    <span class='badge badge-danger'>{{ oldConnections | Format:'#,###,###' }}</span>
+    <span class='badge badge-info'>{{ closedConnections | Format:'#,###,###' }}</span>
+</div>
