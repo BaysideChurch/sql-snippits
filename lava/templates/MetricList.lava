@@ -1,13 +1,16 @@
 <style>
     .metric-container {
         display: grid;
-        grid: minmax(10px, min-content) / repeat(auto-fill, minmax(350px, 1fr));;
+        grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+        grid-gap: 0 0.5rem;
     }
 
     .metric-card {
-        border-radius: 10px;
+        border-radius: 0;
+        border: 1px solid #ddd;
         background: white;
-        box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+        box-shadow: 0 0 5px rgba(0, 0, 0, .1);
+        margin-bottom: 0.5rem;
     }
 
     .metric-title {
@@ -29,6 +32,14 @@
         WHERE
             [CategoryId] = @category
     {% endsql %}
+
+    {% if results == empty %}
+        <div class="alert alert-info">
+            <p class="font-weight-bold">No Metrics</p>
+            <p>There are no metrics for this page yet. If you would like to see a specific metric, please click below to submit a ticket.</p>
+            <a class="btn btn-primary mt-3" target="_blank" href="https://{{ 'Global' | Page:'Host' }}/page/3200">Submit Ticket</a>
+        </div>
+    {% endif %}
 
     {% for metric in results %}
         {% sql metricId:'{{ metric.Id }}' %}
@@ -60,13 +71,20 @@
                 {% assign prevValue = 0 %}
             {% endif %}
 
-            <div class="metric-card m-2 px-3 py-1">
-                <h5>
-                    <i class="{{ results[0].IconCssClass }} mr-2"></i>
-                    {{ results[0].Title }}
+            <div class="metric-card px-3 pt-1 pb-2">
+                <h5 class="mb-0">
+                    <div class="mr-2">
+                        <i class="{{ results[0].IconCssClass }} mr-2"></i>
+                        {{ results[0].Title }}
+                    </div>
                 </h5>
-                <div>
-                    <span class="metric-value m-2">
+                {% if detailPageId > 0 %}
+                    <div style="font-size: .8rem;">
+                        <a href="https://{{ 'Global' | Page:'Host' }}/page/{{ detailPageId }}?MetricId={{ metric.Id }}">View Chart</a>
+                    </div>
+                {% endif %}
+                <div class="mt-2">
+                    <span class="metric-value mr-2">
                         {% if value && value != '' %} {{ value | Format:'#,##0' }} {% else %} <bolder>0</bolder> {% endif %}
                     </span>
                     <span class="metric-delta">
