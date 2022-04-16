@@ -1,0 +1,9 @@
+{% assign pricePerSqIn = 0.02 %}
+{% assign width = Workflow | Attribute:'Width' %}
+{% assign height = Workflow | Attribute:'Height' %}
+{% assign qty = Workflow | Attribute:'Quantity' %}
+
+{% execute %}
+    double price = (double){{ pricePerSqIn }} * (double){{ width }} * (double){{ height }} * (double){{ qty }};
+    return price.ToString();
+{% endexecute %}
