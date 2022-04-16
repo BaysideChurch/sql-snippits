@@ -25,7 +25,8 @@
 
         // add $2 for each hole
         if ("{{ holeDrilling }}".Equals("None") == false) {
-            price += {{ holeDrilling }} * 2 * (double){{ qty }};
+            var holeCount = Int32.Parse("{{ holeDrilling }}");
+            price += holeCount * 2 * (double){{ qty }};
         }
     }
 
