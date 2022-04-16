@@ -1,0 +1,18 @@
+{% assign projectName = Workflow | Attribute:'ProjectName' %}
+{% assign email = Workflow | Attribute:'Email' %}
+{% assign campus = Workflow | Attribute:'Campus' %}
+{% assign ministry = Workflow | Attribute:'Minstry' %}
+{% assign dueDate = Workflow | Attribute:'DueDate' | Date:'yyyy-MM-dd' %}
+{% assign rollOutDate = Workflow | Attribute:'RollOutDate' | Date:'yyyy-MM-dd' %}
+{% assign material = Workflow | Attribute:'Material' %}
+{% assign width = Workflow | Attribute:'Width' %}
+{% assign height = Workflow | Attribute:'Height' %}
+{% assign quantity = Workflow | Attribute:'Quantity' %}
+{% assign fileGiud = Workflow | Attribute:'File','Object' | Property:'Guid' %}
+{% assign fileName = Workflow | Attribute:'File','Object' | Property:'FileName' %}
+{% assign notes = Workflow | Attribute:'Notes' %}
+{% assign price = Workflow | Attribute:'Price' %}
+{% assign otherMinistry = Workflow | Attribute:'OtherMinistry' %}
+{% assign itemType = "Business Card" %}
+
+{% include "~/Content/Lava/PrintShop/Payload.lava" %}

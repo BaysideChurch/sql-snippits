@@ -1,0 +1,52 @@
+{% comment %}
+    This is a generic template used in each print shop item workflow
+    to render the check out confirmation form header.
+
+    Inputs:
+    - width
+    - height
+    - material
+    - quantity
+    - price
+    - dueDate
+    - notes
+    - details
+{% endcomment %}
+
+<div>
+  <h3 class="text-center">Review Your Order</h3>
+  <div style="max-width: 800px; margin: auto;">
+
+    <div class="row">
+      <div class="col-md-4">
+        <p class="font-weight-bold">Item</p>
+        <p>{{ material }} {{ width }}" x {{ height }}"</p>
+        <div>{{ details }}</div>
+      </div>
+      <div class="col-md-4">
+        <p class="font-weight-bold">Quantity</p>
+        <p>{{ quantity }}</p>
+      </div>
+      <div class="col-md-4">
+        <p class="font-weight-bold">Price</p>
+        <p>{{ price }}</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4">
+        <p class="font-weight-bold">Due-Date</p>
+        <p>{{ dueDate }}</p>
+      </div>
+      <div class="col-md-4">
+        <p class="font-weight-bold">Email</p>
+        <p>{{ email }}</p>
+      </div>
+      <div class="col-md-4">
+        <p class="font-weight-bold">Notes</p>
+        <p>{{ notes }}</p>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,14 +1,39 @@
-<div class="text-align-center">
-  <h1>Sticker Nametags</h1>
-</div>
+{% comment %}
+    This is a generic template used in each print shop item workflow. It displays
+    the form header and calculates the price client side.
+
+    Inputs:
+    - error                         : the error message to be displayed
+    - fieldsJson                    : JSON array that contains the fields. Will be passed as an object to the calculate price function
+    - calculatePriceJavascript      : a javascript function that will calculate the price
+
+    EXAMPLES
+
+    [
+        {
+            "name": "material",
+            "selector": "select[name*=attribute_field_27303]",
+            "event": "change"
+        },
+        {
+            "name": "quantity",
+            "selector": "input[name*=attribute_field_27294]",
+            "event": "input"
+        },
+    ]
+
+    function calculatePrice({material, quantity}) {
+        return quantity * 0.06;
+    }
+{% endcomment %}
+
+{% assign fields = fieldsJson | FromJSON %}
 
 <script>
   /*
    * this script calculates the price on the client side. note that the real
-   * price is calculated in a workflow action below.
+   * price is calculated in a workflow action.
    */
-
-  {% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
 
   $(document).ready(function() {
     addMainObserver();
@@ -20,6 +45,11 @@
       addValidationErrors();
   });
 
+  /*
+   * inserts the calculate price function passed into this template
+   */
+  {{ calculatePriceJavascript }}
+
   // adds the main observer that will re-add the listeners if the form changes
   function addMainObserver() {
     const observer = new MutationObserver(function(mutations) {
@@ -30,14 +60,21 @@
     observer.observe(document.querySelector(".workflow-entry div[id*=upnlContent]"), { subtree: false, childList: true });
   }
 
-  // add all the listeners to the form fields that control price
+  /*
+   * parses the fields JSON string and adds apprpriate event listeners to each selector
+   */
   function addAllListeners() {
-    addListenerToSelector("input[name*=attribute_field_27314]", "input");
+    {% for field in fields %}
+        addListenerToSelector(`{{ field.selector }}`, `{{ field.event }}`);
+    {% endfor %}
   }
 
-  // creates validation error panel and adds custom validation messages to it
+  /*
+   * creates validation error panel and adds custom validation messages to it
+   */
   function addValidationErrors() {
     let container = document.querySelector(".workflow-entry-panel .alert.alert-validation");
+    let errorMessage = `{{ error }}`;
 
     // create container if it doesn't exist
     if (!container) {
@@ -67,10 +104,12 @@
 
     container.style.display = null;
 
-    messageContainer.innerHTML = messageContainer.innerHTML +  `{{ error }}`;
+    messageContainer.innerHTML = messageContainer.innerHTML + errorMessage;
   }
 
-  // use this function to add listeners to inputs and select boxes
+  /*
+   * use this function to add listeners to inputs and select boxes
+   */
   function addListenerToSelector(selector, eventName, multiple = false) {
     if (multiple)
       document.querySelectorAll(selector).forEach((elem) => {
@@ -85,17 +124,20 @@
       elem.addEventListener(eventName, handleInput);
   }
 
-  function calculatePrice(quantity) {
-    return quantity * 0.81;
-  }
-
+  /*
+   * use this function to add listeners to inputs and select boxes
+   */
   function handleInput() {
-    const quantityInput = document.querySelector("input[name*=attribute_field_27314]");
+    let data = {};
+
+    // loops over all filds and stores their values to pass to calculate price
+    {% for field in fields %}
+        data["{{ field.name }}"] = document.querySelector("{{ field.selector }}").value;
+    {% endfor %}
+
     const priceTarget = document.getElementById("price-target");
 
-    price = calculatePrice(
-        quantityInput.value
-    );
+    price = calculatePrice(data);
 
     // Create our number formatter.
     var formatter = new Intl.NumberFormat('en-US', {

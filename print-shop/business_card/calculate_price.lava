@@ -1,0 +1,10 @@
+{% assign qty = Workflow | Attribute:'Quantity' %}
+
+{% execute %}
+    var price = 0.0;
+    var quantity = (double){{ qty }};
+
+    price = quantity * 0.06;
+
+    return price.ToString();
+{% endexecute %}
