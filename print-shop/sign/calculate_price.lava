@@ -1,0 +1,38 @@
+{% assign pricePerSqIn = 0.0022 %}
+{% assign material = Workflow | Attribute:'Material' %}
+{% assign width = Workflow | Attribute:'Width' %}
+{% assign height = Workflow | Attribute:'Height' %}
+{% assign qty = Workflow | Attribute:'Quantity' %}
+{% assign hstakes = Workflow | Attribute:'H-Stake' %}
+{% assign doubleSided = Workflow | Attribute:'DoubleSided' %}
+{% assign holeDrilling = Workflow | Attribute:'HoleDrilling' %}
+
+{% execute %}
+    double widthHeightQty = (double){{ width }} * (double){{ height }} * (double){{ qty }};
+    double price = 0.0;
+
+    if ("{{ material }}" == "White Corrugated Board") {
+        price = widthHeightQty * 0.0027;
+
+        // each h-stake costs a dollar
+        if ("{{ hstakes }}".Equals("Yes")) {
+            price += 1 * {{ qty }};
+        }
+    } else if ("{{ material }}" == "Foamcore") {
+        price = widthHeightQty * 0.0027;
+    } else if ("{{ material }}" == "Aluminum Diabond") {
+        price = widthHeightQty * 0.076;
+
+        // add $2 for each hole
+        if ("{{ holeDrilling }}".Equals("None") == false) {
+            price += {{ holeDrilling }} * 2;
+        }
+    }
+
+    // add 20% for double-sided
+    if ("{{ doubleSided }}".Equals("Yes")) {
+        price = price * 1.20;
+    }
+
+    return price.ToString();
+{% endexecute %}
