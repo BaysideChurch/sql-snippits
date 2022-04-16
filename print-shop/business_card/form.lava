@@ -1,12 +1,28 @@
-{% assign material = Workflow | Attribute:'Material' %}
-{% assign width = Workflow | Attribute:'Width' %}
-{% assign height = Workflow | Attribute:'Height' %}
-{% assign quantity = Workflow | Attribute:'Quantity' %}
-{% assign price = Workflow | Attribute:'Price' %}
-{% assign dueDate = Workflow | Attribute:'DueDate' %}
-{% assign email = Workflow | Attribute:'Email' %}
-{% assign notes = Workflow | Attribute:'Notes' %}
+<div class="text-align-center">
+  <h1>Business Cards</h1>
+</div>
 
-{% capture details %}{% endcapture %}
+{% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
 
-{% include '~/Content/Lava/PrintShop/CheckoutForm.lava' %}
+{% capture fieldsJson %}
+[
+    {
+        "name": "material",
+        "selector": "select[name*=attribute_field_27303]",
+        "event": "change"
+    },
+    {
+        "name": "quantity",
+        "selector": "input[name*=attribute_field_27294]",
+        "event": "input"
+    }
+]
+{% endcapture %}
+
+{% capture calculatePriceJavascript %}
+    function calculatePrice({material, quantity}) {
+        return quantity * 0.06;
+    }
+{% endcapture %}
+
+{% include "~/Content/Lava/PrintShop/ItemForm.lava" %}

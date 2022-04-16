@@ -2,6 +2,8 @@
   <h1>Sign</h1>
 </div>
 
+{% capture %}
+
 <script>
   /*
    * this script calculates the price on the client side. note that the real
@@ -88,32 +90,6 @@
 
     if (elem)
       elem.addEventListener(eventName, handleInput);
-  }
-
-  function calculatePrice(width, height, quantity, material, hstake, doubleSided) {
-    const widthHeightQty = width * height * quantity;
-    let price = 0.0;
-
-    if (material == "White Corrugated Board") {
-      price = widthHeightQty * 0.0027;
-
-      // each h-stake costs a dollar
-      if (hstake)
-        price += 1 * quantity;
-
-    } else if (material == "Foamcore")
-        price = widthHeightQty * 0.0026;
-
-    else if (material == "Aluminum Diabond")
-        price = widthHeightQty * 0.056;
-
-    // add 20% for double-sided
-    if (doubleSided)
-        price = price * 1.20;
-
-    console.log(`calculating: ${price}`);
-
-    return price;
   }
 
   function handleInput() {
