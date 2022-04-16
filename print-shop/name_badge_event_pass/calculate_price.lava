@@ -1,0 +1,13 @@
+{% assign quantity = Workflow | Attribute:'Quantity' %}
+{% assign lanyard = Workflow | Attribute:'Lanyard' %}
+
+{% execute %}
+  var quantity = (double){{ quantity }};
+  var price = quantity * 0.12;
+  var lanyard = "{{ lanyard }}" == "Yes";
+
+  if (lanyard)
+    price += 0.80 * quantity;
+
+  return price.ToString();
+{% endexecute %}

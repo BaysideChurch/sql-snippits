@@ -1,0 +1,27 @@
+{% assign material = Workflow | Attribute:'Material' %}
+{% assign width = Workflow | Attribute:'Width' %}
+{% assign height = Workflow | Attribute:'Height' %}
+{% assign quantity = Workflow | Attribute:'Quantity' %}
+{% assign price = Workflow | Attribute:'Price' %}
+{% assign dueDate = Workflow | Attribute:'DueDate' %}
+{% assign email = Workflow | Attribute:'Email' %}
+{% assign notes = Workflow | Attribute:'Notes' %}
+
+{% capture details %}
+  <ul>
+    <li>
+      Lanyard: {{ Workflow | Attribute:'Lanyard' }}
+    </li>
+    <li>
+      Double Sided: {{ Workflow | Attribute:'DoubleSided' }}
+    </li>
+    <li>
+      Custom Names: {{ Workflow | Attribute:'CustomNames' }}
+    </li>
+    <li>
+      Design: {{ Workflow | Attribute:'Design' }}
+    </li>
+  </ul>
+{% endcapture %}
+
+{% include '~/Content/Lava/PrintShop/CheckoutForm.lava' %}
