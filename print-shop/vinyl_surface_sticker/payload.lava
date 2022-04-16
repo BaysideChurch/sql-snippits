@@ -1,3 +1,21 @@
-{
-  "query": "mutation { create_item(item_name: \"{{ Workflow | Attribute:'ProjectName' }}\", board_id: 2229130587, group_id: \"topics\", column_values: \"{\\\"text\\\": \\\"{{ Workflow | Attribute:'Email' }}\\\", \\\"campus\\\": \\\"{{ Workflow | Attribute:'Campus' }}\\\", \\\"dropdown3\\\": \\\"{{ Workflow | Attribute:'Ministry' }}\\\", \\\"date4\\\": \\\"{{ Workflow | Attribute:'DueDate' | Date:'yyyy-MM-dd' }}\\\", \\\"date\\\": \\\"{{ Workflow | Attribute:'RollOutDate' | Date:'yyyy-MM-dd' }}\\\", \\\"dropdown5\\\": \\\"Vinyl\\\", \\\"text7\\\": \\\"{{ Workflow | Attribute:'Width' }}x{{ Workflow | Attribute:'Height' }}\\\", \\\"text4\\\": \\\"{{ Workflow | Attribute:'Quantity' }}\\\", \\\"link\\\": \\\"https://rock.bayside.church/GetFile.ashx?Guid={{ Workflow | Attribute:'File','Object' | Property:'Guid' }} {{ Workflow | Attribute:'File','Object' | Property:'FileName' }}\\\", \\\"long_text\\\": \\\"{{ Workflow | Attribute:'Notes' }}\\\", \\\"dropdown\\\": \\\"Vinyl Surface Sticker\\\", \\\"price\\\": \\\"{{ Workflow | Attribute:'Price' }}\\\", \\\"text0\\\": \\\"{{ Workflow | Attribute:'OtherMinistry' }}\\\" }\") { id } }"
-}
+{% assign projectName = Workflow | Attribute:'ProjectName' %}
+{% assign email = Workflow | Attribute:'Email' %}
+{% assign campus = Workflow | Attribute:'Campus' %}
+{% assign ministry = Workflow | Attribute:'Ministry' %}
+{% assign dueDate = Workflow | Attribute:'DueDate' | Date:'yyyy-MM-dd' %}
+{% assign rollOutDate = Workflow | Attribute:'RollOutDate' | Date:'yyyy-MM-dd' %}
+{% assign material = "Vinyl" %}
+{% assign width = Workflow | Attribute:'Width' %}
+{% assign height = Workflow | Attribute:'Height' %}
+{% assign quantity = Workflow | Attribute:'Quantity' %}
+{% assign fileGuid = Workflow | Attribute:'File','Object' | Property:'Guid' %}
+{% assign fileName = Workflow | Attribute:'File','Object' | Property:'FileName' %}
+{% assign notes = Workflow | Attribute:'Notes' %}
+{% assign price = Workflow | Attribute:'Price' %}
+{% assign otherMinistry = Workflow | Attribute:'OtherMinistry' %}
+{% assign itemType = "Vinyl Surface Sticker" %}
+
+{% capture details %}
+{% endcapture %}
+
+{% include "~/Content/Lava/PrintShop/Payload.lava" %}

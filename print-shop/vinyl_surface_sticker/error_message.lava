@@ -1,0 +1,14 @@
+{% assign width = Workflow | Attribute:'Width' %}
+{% assign height = Workflow | Attribute:'Height' %}
+
+{% execute %}
+    var html = "";
+    if ({{ width }} > 100) {
+        html += "<p>Width must be 100 inches or less.</p>";
+    }
+
+    if ({{ height }} > 54) {
+        html += "<p>Height must be 54 inches or less.</p>";
+    }
+    return html;
+{% endexecute %}
