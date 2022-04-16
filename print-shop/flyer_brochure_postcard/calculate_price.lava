@@ -1,0 +1,23 @@
+{% assign quantity = Workflow | Attribute:'Quantity' %}
+{% assign material = Workflow | Attribute:'Material' %}
+{% assign folds = Workflow | Attribute:'Folds' | WithFallback:'','' %}
+
+{% execute %}
+  var price = 0.0;
+  var folds = "{{ folds }}";
+  var quantity = (double){{ quantity }};
+  var material = "{{ material }}";
+
+  if (material == "100lb Matt Paper Stock")
+    price = quantity * 0.44;
+  else if (material == "80lb Matt Cover Stock")
+    price = quantity * 0.47;
+
+  // add $0.01 for each fold
+  if (!String.IsNullOrWhiteSpace(folds) && folds != "None") {
+    var foldCount = Int32.Parse(folds);
+    price += foldCount * quantity * 0.01;
+  }
+
+  return price.ToString();
+{% endexecute %}

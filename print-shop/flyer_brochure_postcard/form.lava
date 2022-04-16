@@ -2,128 +2,65 @@
   <h1>Flyers, Brochures & Postcards</h1>
 </div>
 
-<script>
-  /*
-   * this script calculates the price on the client side. note that the real
-   * price is calculated in a workflow action below.
-   */
+{% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
 
-  {% assign error = Workflow | Attribute:'ErrorMessage' | WithFallback:'','' %}
+{% capture fieldsJson %}
+[
+  {
+    "name": "material",
+    "selector": "select[name*=attribute_field_27284]",
+    "event": "change"
+  },
+  {
+    "name": "width",
+    "selector": "input[name*=attribute_field_27282]",
+    "event": "input"
+  },
+  {
+    "name": "height",
+    "selector": "input[name*=attribute_field_27283]",
+    "event": "input"
+  },
+  {
+    "name": "quantity",
+    "selector": "input[name*=attribute_field_27275]",
+    "event": "input"
+  },
+  {
+    "name": "folds",
+    "selector": "select[name*=attribute_field_27285]",
+    "event": "change"
+  },
+  {
+    "name": "hstake",
+    "selector": "select[name*=attribute_field_25664]",
+    "event": "change"
+  },
+  {
+    "name": "holeDrilling",
+    "selector": "select[name*=attribute_field_28624]",
+    "event": "change"
+  }
+]
+{% endcapture %}
 
-  $(document).ready(function() {
-    addMainObserver();
-    addAllListeners();
-    handleInput(); // fill in price on page load
+{% capture calculatePriceJavascript %}
+function calculatePrice({width, height, quantity, material, folds}) {
+  let price = 0.0;
 
-    // add validation errors to validation container
-    if (`{{ error }}`.length > 0)
-      addValidationErrors();
-  });
+  if (material == "100lb Matt Paper Stock")
+    price = quantity * 0.44;
+  else if (material == "80lb Matt Cover Stock")
+    price = quantity * 0.47;
 
-  // adds the main observer that will re-add the listeners if the form changes
-  function addMainObserver() {
-    const observer = new MutationObserver(function(mutations) {
-      addAllListeners();
-      handleInput(); // fill in price
-    });
-
-    observer.observe(document.querySelector(".workflow-entry div[id*=upnlContent]"), { subtree: false, childList: true });
+  // add one cent for each fold
+  if (folds && folds.toLowerCase() != "none") {
+    const foldCount = parseInt(folds);
+    price += foldCount * quantity * 0.01;
   }
 
-  // add all the listeners to the form fields that control price
-  function addAllListeners() {
-    addListenerToSelector("select[name*=attribute_field_27284]", "change");
-    addListenerToSelector("input[name*=attribute_field_27282]", "input");
-    addListenerToSelector("input[name*=attribute_field_27283]", "input");
-    addListenerToSelector("input[name*=attribute_field_27275]", "input");
-    addListenerToSelector("select[name*=attribute_field_27285]", "change");
-  }
+  return price;
+}
+{% endcapture %}
 
-  // creates validation error panel and adds custom validation messages to it
-  function addValidationErrors() {
-    let container = document.querySelector(".workflow-entry-panel .alert.alert-validation");
-
-    // create container if it doesn't exist
-    if (!container) {
-      container = document.createElement("div");
-      container.className = "alert alert-validation";
-      container.innerHTML = `
-        Please correct the following:
-        <ul>
-        </ul>
-      `;
-
-      document.querySelector(".workflow-entry-panel").prepend(container);
-    }
-
-    // add the message container if it doesn't exist
-    let messageContainer = container.querySelector("ul");
-
-    if (!messageContainer) {
-      container.innerHTML = `
-        Please correct the following:
-        <ul>
-        </ul>
-      `;
-
-      messageContainer = container.querySelector("ul");
-    }
-
-    container.style.display = null;
-
-    messageContainer.innerHTML = messageContainer.innerHTML +  `{{ error }}`;
-  }
-
-  // use this function to add listeners to inputs and select boxes
-  function addListenerToSelector(selector, eventName, multiple = false) {
-    if (multiple)
-      document.querySelectorAll(selector).forEach((elem) => {
-        elem.addEventListener(eventName, handleInput);
-      });
-
-    const elem = document.querySelector(selector);
-
-    console.log(elem);
-
-    if (elem)
-      elem.addEventListener(eventName, handleInput);
-  }
-
-  function calculatePrice(width, height, quantity, material, folds) {
-    let price = 0.0;
-
-    if (material == "100lb Matt Paper Stock")
-      price = quantity * 0.44;
-    else if (material == "80lb Matt Cover Stock")
-      price = quantity * 0.47;
-
-    price += (folds * 0.01) * quantity;
-
-    return price;
-  }
-
-  function handleInput() {
-    const materialInput = document.querySelector("select[name*=attribute_field_27284]");
-    const widthInput = document.querySelector("input[name*=attribute_field_27282]");
-    const heightInput = document.querySelector("input[name*=attribute_field_27283]");
-    const quantityInput = document.querySelector("input[name*=attribute_field_27275]");
-    const foldsInput = document.querySelector("select[name*=attribute_field_27285]");
-    const priceTarget = document.getElementById("price-target");
-
-    price = calculatePrice(
-      widthInput.value,
-      heightInput.value,
-      quantityInput.value,
-      materialInput.value,
-      foldsInput.value
-    );
-
-    // Create our number formatter.
-    var formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    });
-
-    priceTarget.innerText = formatter.format(price);
-  }
-</script>
+{% include "~/Content/Lava/PrintShop/ItemForm.lava" %}
