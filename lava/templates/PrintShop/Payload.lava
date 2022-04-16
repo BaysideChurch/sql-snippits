@@ -1,4 +1,5 @@
 {% comment %}
+
     Renders a valid JSON (GraphQL) payload for submission to monday.com API
 
     Inputs:
@@ -18,6 +19,7 @@
     - price             : text (or decimal)
     - otherMinistry     : text
     - itemType          : text (must match monday.com dropdown option EXACTLY)
+    - details           : text
 
 {% endcomment %}
 
@@ -25,5 +27,5 @@
 {% assign groupId = "topics" %}
 
 {
-  "query": "mutation { create_item(item_name: \"{{ projectName }}\", board_id: {{ boardId }}, group_id: \"{{ groupId }}\", column_values: \"{\\\"text\\\": \\\"{{ email }}\\\", \\\"campus\\\": \\\"{{ campus }}\\\", \\\"dropdown3\\\": \\\"{{ ministry }}\\\", \\\"date4\\\": \\\"{{ dueDate }}\\\", \\\"date\\\": \\\"{{ rollOutDate }}\\\", \\\"dropdown5\\\": \\\"{{ material }}\\\", \\\"text7\\\": \\\"{{ width }}x{{ height }}\\\", \\\"text4\\\": \\\"{{ quantity }}\\\", \\\"link\\\": \\\"https://rock.bayside.church/GetFile.ashx?Guid={{ fileGuid }} {{ fileName }}\\\", \\\"long_text\\\": \\\"{{ notes }}\\\", \\\"dropdown\\\": \\\"{{ itemType }}\\\", \\\"price\\\": \\\"{{ price }}\\\", \\\"text0\\\": \\\"{{ otherMinistry }}\\\" }\") { id } }"
+  "query": "mutation { create_item(item_name: \"{{ projectName }}\", board_id: {{ boardId }}, group_id: \"{{ groupId }}\", column_values: \"{\\\"text\\\": \\\"{{ email }}\\\", \\\"campus\\\": \\\"{{ campus }}\\\", \\\"dropdown3\\\": \\\"{{ ministry }}\\\", \\\"date4\\\": \\\"{{ dueDate }}\\\", \\\"date\\\": \\\"{{ rollOutDate }}\\\", \\\"dropdown5\\\": \\\"{{ material }}\\\", \\\"text7\\\": \\\"{{ width }}x{{ height }}\\\", \\\"text4\\\": \\\"{{ quantity }}\\\", \\\"link\\\": \\\"https://rock.bayside.church/GetFile.ashx?Guid={{ fileGuid }} {{ fileName }}\\\", \\\"long_text\\\": \\\"{{ notes }}\\\", \\\"dropdown\\\": \\\"{{ itemType }}\\\", \\\"price\\\": \\\"{{ price }}\\\", \\\"text0\\\": \\\"{{ otherMinistry }}\\\", \\\"long_text8\\\": \\"{{ details }}\\\" }\") { id } }"
 }
