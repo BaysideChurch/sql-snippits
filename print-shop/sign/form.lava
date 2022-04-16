@@ -65,7 +65,7 @@ function calculatePrice({width, height, quantity, material, hstake, doubleSided,
       // add $2 per hole for hole drilling
       if (holeDrilling && holeDrilling.toLowerCase() != "none") {
         const holeCount = parseInt(holeDrilling);
-        price += holeCount * 2;
+        price += holeCount * 2 * quantity;
       }
   }
 

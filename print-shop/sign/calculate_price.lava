@@ -16,7 +16,7 @@
 
         // each h-stake costs a dollar
         if ("{{ hstakes }}".Equals("Yes")) {
-            price += 1 * {{ qty }};
+            price += 1 * (double){{ qty }};
         }
     } else if ("{{ material }}" == "Foamcore") {
         price = widthHeightQty * 0.0027;
@@ -25,7 +25,7 @@
 
         // add $2 for each hole
         if ("{{ holeDrilling }}".Equals("None") == false) {
-            price += {{ holeDrilling }} * 2;
+            price += {{ holeDrilling }} * 2 * (double){{ qty }};
         }
     }
 
