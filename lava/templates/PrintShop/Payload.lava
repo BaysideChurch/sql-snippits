@@ -21,7 +21,7 @@
 
 {% endcomment %}
 
-{% assign boardId = 2229130587 %}
+{% assign boardId = "2229130587" %} {% comment %}needs to be a string becatse its too big for Int32 (lol){% endcomment %}
 {% assign groupId = "topics" %}
 
 {
