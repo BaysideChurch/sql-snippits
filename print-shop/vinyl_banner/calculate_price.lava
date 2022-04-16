@@ -1,0 +1,8 @@
+{% assign width = Workflow | Attribute:'Width' %}
+{% assign height = Workflow | Attribute:'Height' %}
+{% assign qty = Workflow | Attribute:'Quantity' %}
+
+{% execute %}
+    double price = (double){{ width }} * (double){{ height }} * (double){{ qty }} * 0.30;
+    return price.ToString();
+{% endexecute %}
