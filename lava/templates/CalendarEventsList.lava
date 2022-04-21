@@ -1,9 +1,7 @@
   {% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
 
   {% if eventItemOccurrenceCount == 0 %}
-  <div class="panel panel-default margin-t-md">
-    <div class="margin-all-md"> There are no events in this time frame.</div>
-  </div>
+    <div class="alert alert-info" style="margin-top: 1rem;"> There are no events in this time frame.</div>
   {% endif %}
 
 {% assign firstEic = EventItemOccurrences | First %}
@@ -21,84 +19,61 @@
     {% assign guidString = guids %}
     {% eventitemoccurrence where:'Guid == "{{guidString}}"' %}
         {% for eic in eventitemoccurrenceItems %}
-            <div class="panel panel-default margin-t-md">
+            <div class="panel panel-default margin-t-md" style="box-shadow: 0 0 10px rgb(0 0 0 / 20%); border-radius: 10px !important;">
                 {% if eic.EventItem.Photo.Guid != null %}
                         <center class="bcc-event-image">
-                            <img style="border-radius: 6px 6px 0px 0px;" src="/GetImage.ashx?Guid={{ eic.EventItem.Photo.Guid }}" class="title-image img-responsive" />
+                            <img style="border-radius: 10px 10px 0 0;" src="/GetImage.ashx?Guid={{ eic.EventItem.Photo.Guid }}" class="title-image img-responsive" />
                         </center>
                 {% endif %}
-                <div class="align-items-center mx-3 mb-2">
-                    <div class="row pl-3">
+                <div style="padding: 0 1rem 1rem;">
+                    <div class="row">
                         <h3>{{ eic.EventItem.Name }}</h3>
                     </div>
+
+                    {% if eic.EventItem.Summary != '' %}
                     <div class="row">
-                        {% if eic.EventItem.Summary != '' %}
-                        <div class="col-md-6">
-                            <p class="d-inline font-weight-bold">Summary</p>
+                        <div class="col-md-12">
+                            <p class="d-inline font-weight-bold" style="font-family: bilo; font-size: 18px; text-decoration: underline;">Summary</p>
                             <p>{{ eic.EventItem.Summary }}</p>
                         </div>
-                        {% endif %}
-                        {% if eic.EventItem.Summary != '' %}
-                        <div class="col-md-6">
-                            <div>
-                                <p class="d-inline font-weight-bold">Campus</p>
-                                <p>{{ eic.Campus.Name }}</p>
-                            </div>
-                            <div class="my-1">
-                                <p class="d-inline font-weight-bold">Location</p>
-                                <p>{{ eic.Location }}</p>
-                            </div>
-                            <div class="my-1">
-                                <p class="d-inline font-weight-bold">Schedule</p>
-                                <p>{{ eic.Schedule.FriendlyScheduleText }}</p>
-                            </div>
-                            <div class="col-md-6" style="padding: 0">
-                                    <p class="d-inline font-weight-bold">Start Date</p>
-                                    <p class="d-inline">{{ eic.Schedule.EffectiveStartDate | Date:'M/d/yyyy' }}</p>
-                            </div>
-                            {% if eic.Schedule.EffectiveEndDate | Date:'M/d/yyyy' != '' %}
-                            <div class="col-md-6" style="padding: 0">
-                                    <p class="d-inline font-weight-bold">End Date</p>
-                                    <p class="d-inline">{{ eic.Schedule.EffectiveEndDate | Date:'M/d/yyyy' }}</p>
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% else %}
-                        <div class="col-md-6">
-                            <div>
-                                <p class="d-inline font-weight-bold">Campus</p>
-                                <p>{{ eic.Campus.Name }}</p>
-                            </div>
-                            <div class="my-1">
-                                <p class="d-inline font-weight-bold">Location</p>
-                                <p>{{ eic.Location }}</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="my-1">
-                                <p class="d-inline font-weight-bold">Schedule</p>
-                                <p>{{ eic.Schedule.FriendlyScheduleText }}</p>
-                            </div>
-                            <div class="col-md-6" style="padding: 0">
-                                    <p class="d-inline font-weight-bold">Start Date</p>
-                                    <p class="d-inline">{{ eic.Schedule.EffectiveStartDate | Date:'M/d/yyyy' }}</p>
-                            </div>
-                            {% if eic.Schedule.EffectiveEndDate | Date:'M/d/yyyy' != '' %}
-                            <div class="col-md-6" style="padding: 0">
-                                    <p class="d-inline font-weight-bold">End Date</p>
-                                    <p class="d-inline">{{ eic.Schedule.EffectiveEndDate | Date:'M/d/yyyy' }}</p>
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endif %}
                     </div>
-                    <div class="row ml-auto mt-3">
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="d-inline font-weight-bold" style="font-family: bilo; font-size: 18px; text-decoration: underline;">Location</p>
+                            <p>{{ eic.Location }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="d-inline font-weight-bold" style="font-family: bilo; font-size: 18px; text-decoration: underline;">Campus</p>
+                            <p>{{ eic.Campus.Name }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="d-inline font-weight-bold" style="font-family: bilo; font-size: 18px; text-decoration: underline;">Schedule</p>
+                            <p>{{ eic.Schedule.FriendlyScheduleText }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="d-inline font-weight-bold" style="font-family: bilo; font-size: 18px; text-decoration: underline;">Start Date:</p>
+                            <p class="d-inline">{{ eic.Schedule.EffectiveStartDate | Date:'M/d/yyyy' }}</p>
+
+                            {% if eic.Schedule.EffectiveEndDate | Date:'M/d/yyyy' != '' %}
+                                <br />
+                                <p class="d-inline font-weight-bold" style="font-family: bilo; font-size: 18px; text-decoration: underline;">End Date:</p>
+                                <p class="d-inline">{{ eic.Schedule.EffectiveEndDate | Date:'M/d/yyyy' }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row ml-auto mt-2">
                     {% if eic.DetailPage != null %}
-                        <a class="btn btn-info btn-md" href="{{ eic.DetailPage }}">
+                        <a class="btn btn-primary btn-md" href="{{ eic.DetailPage }}">
                           View Details
                         </a>
             		{% else %}
-                		<a class="btn btn-info btn-md" href="{{ DetailsPage }}?EventOccurrenceId={{ eic.Id }}">
+                		<a class="btn btn-primary btn-md" href="{{ DetailsPage }}?EventOccurrenceId={{ eic.Id }}">
                             View Details
                         </a>
                     {% endif %}
