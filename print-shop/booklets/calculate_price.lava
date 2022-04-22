@@ -1,0 +1,29 @@
+{% assign quantity = Workflow | Attribute:'Quantity' %}
+{% assign coverMaterial = Workflow | Attribute:'CoverMaterial' %}
+{% assign insideMaterial = Workflow | Attribute:'InsideMaterial' %}
+{% assign pageCount = Workflow | Attribute:'PageCount' %}
+
+{% execute %}
+  var price = 0.0;
+  var quantity = (double){{ quantity }};
+  var coverMaterial = "{{ coverMaterial }}";
+  var insideMaterial = "{{ insideMaterial }}";
+  var pageCount = (double){{ pageCount }};
+
+  if (coverMaterial == "80lb Matt Cover Stock") {
+    price += quantity * 0.47;
+  } else if (coverMaterial == "80lb Uncoated Cover") {
+    price += quantity * 0.47;
+  }
+
+  if (insideMaterial == "80lb Uncoated Text") {
+    price += quantity * 0.43 * pageCount;
+  } else if (insideMaterial == "100lb Matt Paper Stock") {
+    price += quantity * 0.44 * pageCount;
+  }
+
+  // add finishing price for each booklet
+  price += quantity * 1.05;
+
+  return price.ToString();
+{% endexecute %}
