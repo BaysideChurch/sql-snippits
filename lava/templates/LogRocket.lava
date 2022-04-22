@@ -1,0 +1,108 @@
+{% javascript %}
+  {% if CurrentPerson != null %}
+    LogRocket.identify('{{ CurrentPerson.Id }}', {
+      name: '{{ CurrentPerson.FullName }}',
+      email: '{{ CurrentPerson.Email }}',
+      campus: '{{ CurrentPerson.PrimaryCampus.Name }}',
+      platform: 'Rock External',
+    });
+  {% endif %}
+{% endjavascript %}
+
+{% comment %}
+  this JS code redacts all the sensitive info from pages
+{% endcomment %}
+
+<script>
+
+  $(document).ready(function() {
+    redactElements();
+
+    // also add mutation listener to each redactable element so they get redacted even if the full page does not reload
+    var elements = document.querySelectorAll(".bcc-redact");
+
+    if (elements) {
+      elements.forEach(function(elem) {
+        console.log("adding observer");
+        console.dir(elem);
+
+        const observer = new MutationObserver(function(mutations) {
+          redactElements();
+        });
+
+        observer.observe(elem, {subtree: true, childList: true});
+      });
+    }
+  });
+
+  function redactElements() {
+    redactPaymentEntryPanels();
+    redactTableRowElements();
+    redactFullElements();
+    redactCanvasElements();
+    redactSummaryPanelElements();
+  }
+
+  // this automatically grabs any payment info panels and redacts the entire thing
+  function redactPaymentEntryPanels() {
+    // redact payment entry section of event registration
+    document.querySelectorAll("[id*=pnlPaymentInfo]").forEach(function(elem) {
+      redact(elem);
+    });
+  }
+
+  // use .bcc-redact-table-rows on blocks with grids of sensitive data
+  function redactTableRowElements() {
+    const elems = document.querySelectorAll(".bcc-redact-table-rows");
+
+    if (elems) {
+      elems.forEach(function(elem) {
+        // only redact data cells
+        elem.querySelectorAll("tbody tr td").forEach(function(cell) {
+          redact(cell);
+        });
+      });
+    }
+  }
+
+  // use .bcc-redact-full to redact entire elements
+  function redactFullElements() {
+    var fullRedactedElements = document.querySelectorAll(".bcc-redact-full");
+
+    if (fullRedactedElements) {
+      fullRedactedElements.forEach(function(elem) {
+        redact(elem);
+      });
+    }
+  }
+
+  // use .bcc-redact-canvas to redact all canvas elements in a block
+  // - NOTE: this is mainly used for charts
+  function redactCanvasElements() {
+    var canvases = document.querySelectorAll(".bcc-redact-canvas canvas");
+
+    if (canvases) {
+      canvases.forEach(function(elem) {
+        redact(elem);
+      });
+    }
+  }
+
+  // use .bcc-redact-summary-panel to hide summary panel inside block
+  // - NOTE: this is mainly used for finance blocks like transaction list that summarize financial
+  //         amouns at the bottom of the page
+  function redactSummaryPanelElements() {
+    var panels = document.querySelectorAll(".bcc-redact-summary-panel [id*=pnlSummary]");
+
+    if (panels) {
+      panels.forEach(function(elem) {
+        redact(elem);
+      });
+    }
+  }
+
+  // redacts an individual element
+  function redact(elem) {
+    elem.setAttribute("data-private", "redact");
+  }
+</script>
