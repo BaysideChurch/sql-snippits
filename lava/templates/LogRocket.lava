@@ -4,7 +4,6 @@
       name: '{{ CurrentPerson.FullName }}',
       email: '{{ CurrentPerson.Email }}',
       campus: '{{ CurrentPerson.PrimaryCampus.Name }}',
-      platform: 'Rock External',
     });
   {% endif %}
 {% endjavascript %}
