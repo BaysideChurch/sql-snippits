@@ -1,0 +1,6 @@
+<div>
+  <p style="font-size: 1.5em;">
+    <span style="font-weight: 500;">Estimated Price:</span>
+    <span style="font-weight: 600; color: #B94848;" id="price-target"></span>
+  </p>
+</div>
