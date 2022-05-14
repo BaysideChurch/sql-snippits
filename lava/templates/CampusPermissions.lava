@@ -1,0 +1,44 @@
+{% comment %} sql query to return a list of campuses (id, name) that the person has permission to access. {% endcomment %}
+{% if CurrentPerson != null %}
+{% sql %}
+SELECT
+    STRING_AGG(CONVERT(varchar(10), y.[CampusId]), ', ') As [CampusPermissionsId]
+    ,STRING_AGG(CONVERT(varchar(25), y.[CampusName]), ', ') As [CampusPermissionsName]
+FROM
+    (
+    SELECT
+        c.[Id] AS [CampusId]
+        ,c.[Name] As [CampusName]
+    FROM
+        [Campus] c
+        CROSS APPLY
+        (
+            SELECT
+                av.[Value]
+            FROM
+                [Attribute] a
+                INNER JOIN [AttributeValue] av ON av.[AttributeId] = a.[Id]
+            WHERE
+                a.[Key] = 'PermissionChartGroup'
+                AND av.[EntityId] = c.[Id]
+        )x
+    WHERE
+        EXISTS
+        (
+            SELECT g.[Id]
+            FROM
+                [Person] p
+                INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
+                INNER JOIN [Group] g On g.[Id] = gm.[GroupId]
+            WHERE
+                g.[Guid] = x.[Value]
+                AND p.[Id] = {{ CurrentPerson.Id }}
+        )
+    )y
+{% endsql %}
+
+{% for item in results %}
+    {% assign campusPermissionsId = item.CampusPermissionsId %}
+    {% assign campusPermissionsName = item.CampusPermissionsName %}
+{% endfor %}
+{% endif %}

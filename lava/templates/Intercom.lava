@@ -1,0 +1,28 @@
+{% javascript %}
+{% include '~/Content/Lava/CampusPermissions.lava' %}
+
+{% comment %} check if member of shared ops {% endcomment %}
+{% assign sharedOpsGroup = CurrentPerson | Group: "46" %}
+{% for sharedOps in sharedOpsGroup %}
+    {% assign campusPermissionsName = campusPermissionsName | Append:', ' | Append:sharedOps.Group.Name %}
+{% endfor %}
+
+{% comment %} assign all security groups {% endcomment %}
+{% assign securityGroups = CurrentPerson | Groups: "1" %}
+{% for security in securityGroups %}
+    {% assign securityGroupsValue = securityGroupsValue | Append:', ' | Append:security.Group.Name %}
+{% endfor %}
+
+window.intercomSettings = {
+    api_base: "https://api-iam.intercom.io",
+    app_id: "xs865k2t",
+    name: "{{ CurrentPerson.FullName }}",
+    email: "{{ CurrentPerson.Email }}",
+    user_id: "{{ CurrentPerson.Id }}",
+    "Permissions Chart": "{{ campusPermissionsName }}",
+    "Security Groups": "{{ securityGroupsValue }}"
+};
+
+// We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/xs865k2t'
+(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/xs865k2t';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+{% endjavascript %}
