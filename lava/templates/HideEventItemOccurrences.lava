@@ -1,0 +1,12 @@
+{% comment %}
+    Used to hide the Event Item Occurrences in the Group Detail block for non-admins.
+    Must be placed in the POST-HTML section to work.
+{% endcomment %}
+
+{% assign isAdmin = CurrentPerson | Group: "2" %}
+{% if isAdmin == empty %}
+<script>
+$('a[href*="EventItemOccurrenceId"]').addClass('d-none')
+$('a[href*="EventItemOccurrenceId"]').closest('ul').prev('strong').addClass('d-none')
+</script>
+{% endif %}
