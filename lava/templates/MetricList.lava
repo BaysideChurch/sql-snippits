@@ -1,8 +1,12 @@
-<style>
+<div>
+    <h2 class="mt-0">Metrics</h2>
+
+    <style>
     .metric-container {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
         grid-gap: 0 0.5rem;
+        align-items: start;
     }
 
     .metric-card {
@@ -36,74 +40,179 @@
     {% if results == empty %}
         <div class="alert alert-info">
             <p class="font-weight-bold">No Metrics</p>
-            <p>There are no metrics for this page yet. If you would like to see a specific metric, please click below to submit a ticket.</p>
-            <a class="btn btn-primary mt-3" target="_blank" href="https://{{ 'Global' | Page:'Host' }}/page/3200">Submit Ticket</a>
+            <p>There are no metrics for this page yet.</p>
         </div>
     {% endif %}
 
     {% for metric in results %}
         {% sql metricId:'{{ metric.Id }}' %}
-            SELECT TOP 2
-                m.Title as Title,
-                m.IconCssClass AS IconCssClass,
-                mv.[YValue] AS Value,
-                mv.[MetricValueDateTime],
-                r.[Id] AS RelatedReportId
+            SELECT
+                valPartitions.[Value]
+                ,valPartitions.[PreviousValue]
+                ,valPartitions.[Value] - valPartitions.[PreviousValue] AS [DeltaValue]
+                ,valPartitions.[MetricValueDateTime]
+                ,valPartitions.[Title]
+                ,valPartitions.[IconCssClass]
+                ,valPartitions.[PartitionName]
+                ,valPartitions.[RN]
+                ,valPartitions.[RelatedReportId]
             FROM
-                [Metric] m
-                INNER JOIN [MetricValue] mv ON m.[Id] = mv.[MetricId]
-                LEFT JOIN [AttributeValue] av ON av.[EntityId] = m.[Id] AND av.[AttributeId] = 19694
-                LEFT JOIN [Report] r ON r.[Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, av.[Value])
+            (
+            	SELECT
+					mv.[YValue] AS [Value]
+					,LEAD(mv.[YValue]) OVER (partition by mvp.[EntityId] ORDER BY mv.[MetricValueDateTime] DESC) AS [PreviousValue]
+					,mv.[MetricValueDateTime]
+					,m.[Title] as [Title]
+					,m.[IconCssClass] AS [IconCssClass]
+					,mp.[Id]
+					,mp.[Label]
+					,mp.[EntityTypeId]
+					,mvp.[EntityId]
+					,et.[FriendlyName] As [PartitionType]
+					,(CASE et.[Id]
+						WHEN 3 THEN 'Site'
+						WHEN 15 THEN 'Person'
+						WHEN 16 THEN 'Group'
+						WHEN 31 THEN 'Defined Value'
+						WHEN 32 THEN 'Workflow Type'
+						WHEN 34 THEN 'Data View'
+						WHEN 50 THEN 'Group Type Role'
+						WHEN 54 THEN 'Schedule'
+						WHEN 57 THEN 'Entity Type'
+						WHEN 67 THEN 'Campus'
+						WHEN 68 THEN 'Category'
+						WHEN 344 THEN 'Defined Type'
+						WHEN 348 THEN 'Financial Account'
+						WHEN 350 THEN 'Group Type'
+						WHEN 353 THEN 'Location'
+						WHEN 354 THEN 'Metric'
+						WHEN 355 THEN 'Note Type'
+						WHEN 356 THEN 'Report'
+						WHEN 341 THEN 'Content Channel'
+						WHEN 337 THEN 'Connection Activity Type'
+						WHEN 338 THEN 'Connection Opportunity'
+						WHEN 339 THEN 'Connection Status'
+						WHEN 340 THEN 'Connection Type'
+						WHEN 342 THEN 'Content Channel Type'
+						WHEN 347 THEN 'Event Calendar'
+						WHEN 352 THEN 'Interaction Channel'
+						END
+					) AS [Partition Friendly Name]
+					,(CASE et.[Id]
+						WHEN 3 THEN (SELECT TOP 1 s.[Name] FROM [Site] s WHERE s.[Id] = mvp.[EntityId])
+						WHEN 15 THEN (SELECT TOP 1 p.[FirstName] + ' ' + p.[LastName] FROM [Person] p WHERE p.[Id] = mvp.[EntityId])
+						WHEN 16 THEN (SELECT TOP 1 g.[Name] FROM [Group] g WHERE g.[Id] = mvp.[EntityId])
+						WHEN 31 THEN (SELECT TOP 1 dv.[Value] FROM [DefinedValue] dv WHERE dv.[Id] = mvp.[EntityId] AND dv.[DefinedTypeId] = mp.[EntityTypeQualifierValue])
+						WHEN 32 THEN (SELECT TOP 1 wft.[Name] FROM [WorkflowType] wft WHERE wft.[Id] = mvp.[EntityId])
+						WHEN 34 THEN (SELECT TOP 1 dv.[Name] FROM [DataView] dv WHERE dv.[Id] = mvp.[EntityId])
+						WHEN 50 THEN (SELECT TOP 1 gtr.[Name] FROM [GroupTypeRole] gtr WHERE gtr.[Id] = mvp.[EntityId])
+						WHEN 54 THEN (SELECT TOP 1 s.[Name] FROM [Schedule] s WHERE s.[Id] = mvp.[EntityId])
+						WHEN 57 THEN (SELECT TOP 1 et.[FriendlyName] FROM [EntityType] et WHERE et.[Id] = mvp.[EntityId])
+						WHEN 67 THEN (SELECT TOP 1 c.[Name] FROM [Campus] c WHERE c.[Id] = mvp.[EntityId])
+						WHEN 68 THEN (SELECT TOP 1 c.[Name] FROM [Category] c WHERE c.[Id] = mvp.[EntityId])
+						WHEN 344 THEN (SELECT TOP 1 dt.[Name] FROM [DefinedType] dt WHERE dt.[Id] = mvp.[EntityId])
+						WHEN 348 THEN (SELECT TOP 1 fa.[Name] FROM [FinancialAccount] fa WHERE fa.[Id] = mvp.[EntityId])
+						WHEN 350 THEN (SELECT TOP 1 gt.[Name] FROM [GroupType] gt WHERE gt.[Id] = mvp.[EntityId])
+						WHEN 353 THEN (SELECT TOP 1 l.[Name] FROM [Location] l WHERE l.[Id] = mvp.[EntityId])
+						WHEN 354 THEN (SELECT TOP 1 m.[Title] FROM [Metric] m WHERE m.[Id] = mvp.[EntityId])
+						WHEN 355 THEN (SELECT TOP 1 nt.[Name] FROM [NoteType] nt WHERE nt.[Id] = mvp.[EntityId])
+						WHEN 356 THEN (SELECT TOP 1 r.[Name] FROM [Report] r WHERE r.[Id] = mvp.[EntityId])
+						WHEN 341 THEN (SELECT TOP 1 cc.[Name] FROM [ContentChannel] cc WHERE cc.[Id] = mvp.[EntityId])
+						WHEN 337 THEN (SELECT TOP 1 cat.[Name] FROM [ConnectionActivityType] cat WHERE cat.[Id] = mvp.[EntityId])
+						WHEN 338 THEN (SELECT TOP 1 co.[Name] FROM [ConnectionOpportunity] co WHERE co.[Id] = mvp.[EntityId])
+						WHEN 339 THEN (SELECT TOP 1 cs.[Name] FROM [ConnectionStatus] cs WHERE cs.[Id] = mvp.[EntityId])
+						WHEN 340 THEN (SELECT TOP 1 ct.[Name] FROM [ConnectionType] ct WHERE ct.[Id] = mvp.[EntityId])
+						WHEN 342 THEN (SELECT TOP 1 cct.[Name] FROM [ContentChannelType] cct WHERE cct.[Id] = mvp.[EntityId])
+						WHEN 347 THEN (SELECT TOP 1 ec.[Name] FROM [EventCalendar] ec WHERE ec.[Id] = mvp.[EntityId])
+						WHEN 352 THEN (SELECT TOP 1 ic.[Name] FROM [InteractionChannel] ic WHERE ic.[Id] = mvp.[EntityId])
+						END
+					) AS [PartitionName]
+					,ROW_NUMBER() over (partition by mvp.[EntityId] order by mv.[MetricValueDateTime] DESC) AS [RN]
+					,r.[Id] AS [RelatedReportId]
+				FROM
+					[Metric] m
+					INNER JOIN [MetricValue] mv ON mv.[MetricId] = m.[Id]
+					LEFT JOIN [MetricValuePartition] mvp ON mvp.[MetricValueId] = mv.[Id]
+					LEFT JOIN [MetricPartition] mp ON mp.[MetricId] = m.[Id] AND mvp.[MetricPartitionId] = mp.[Id]
+					LEFT JOIN [EntityType] et On et.[Id] = mp.[EntityTypeId]
+					LEFT JOIN [AttributeValue] av ON av.[EntityId] = @metricId AND av.[AttributeId] = 19694
+					LEFT JOIN [Report] r ON r.[Guid] = TRY_CONVERT(UNIQUEIDENTIFIER, av.[Value])
+				WHERE
+					m.[Id] = @metricId
+					AND mv.[CreatedDateTime] >= DATEADD(m, -2, GETDATE()) -- This number can change depending on how far they want to grab partitions
+            ) valPartitions
             WHERE
-                m.[Id] = @metricId
-            ORDER BY
-                mv.[MetricValueDateTime] DESC
+                valPartitions.[RN] = 1
         {% endsql %}
 
         {% if results != empty %}
-            {% assign value = results[0].Value %}
-
-            {% assign resultsSize = results | Size %}
-            {% if resultsSize > 1 %}
-                {% assign prevValue = results[1].Value %}
-                {% assign delta = value | Minus:prevValue %}
-            {% else %}
-                {% assign prevValue = 0 %}
-            {% endif %}
-
+            {% assign metricTitle = results | Index: 0 %}
+            {% assign metrictitle1 = metricTitle.Title %}
+            {% assign numPartitions = results | Select:'PartitionName' | Size %}
+            {% assign iconCss = metricTitle.IconCssClass %}
             <div class="metric-card px-3 pt-1 pb-2">
-                <h5 class="mb-0">
-                    <div class="mr-2">
-                        <i class="{{ results[0].IconCssClass }} mr-2"></i>
-                        {{ results[0].Title }}
-                    </div>
-                </h5>
-                {% if detailPageId > 0 %}
-                    <div style="font-size: .8rem;">
-                        <a href="https://{{ 'Global' | Page:'Host' }}/page/{{ detailPageId }}?MetricId={{ metric.Id }}">View Chart</a>
-                    </div>
-                {% endif %}
-                <div class="mt-2">
-                    <span class="metric-value mr-2">
-                        {% if value && value != '' %} {{ value | Format:'#,##0' }} {% else %} <bolder>0</bolder> {% endif %}
-                    </span>
-                    <span class="metric-delta">
-                        {% if value > prevValue %}
-                            <span style="color: lightgreen;">+ {{ delta | Format:'#,##0' }}</span>
-                        {% elseif value < prevValue %}
-                            <span style="color: lightcoral;">{{ delta | Format:'#,##0' }}</span>
-                        {% else %}
-                            <span>+/- 0</span>
+                    <h5 class="mb-0">
+                        <div class="mr-2">
+                            <i class="{{ iconCss }} mr-2"></i>
+                            {{ metrictitle1 }}
+                        </div>
+                    </h5>
+            {% assign totalValue = 0 %}
+            {% assign totalDelta = 0 %}
+            {% for metricPartition in results %}
+                {% assign value = metricPartition.Value %}
+                {% assign prevValue = metricPartition.PreviousValue %}
+                {% assign delta = metricPartition.DeltaValue %}
+                {% assign totalValue = totalValue | Plus: metricPartition.Value %}
+                {% assign totalDelta = totalDelta | Plus: metricPartition.DeltaValue %}
+    
+                    <div class="mt-2">
+                        {% if metricPartition.PartitionName != null or metricPartition.PartitionName == '' %}
+                        <span class="metric-value">
+                            <strong>
+                            {{ metricPartition.PartitionName }}:</strong><br>
+                        </span>
                         {% endif %}
-                    </span>
-                </div>
-
-                {% if results[0].RelatedReportId > 0 %}
-                    <div class='btn btn-default btn-block metric-report' style="border: none;">
-                        <a class width:100% href="https://{{ 'Global' | Page:'Host' }}/page/{{ reportPage }}?ReportId={{ results[0].RelatedReportId }}">Related Report</a>
+                        <span class="metric-value mr-2">
+                            {% if value && value != '' %} {{ value | Format:'#,##0' }} {% else %} <bolder>0</bolder> {% endif %}
+                        </span>
+                        <span class="metric-delta">
+                            {% if value > prevValue %}
+                                <span style="color: lightgreen;">+ {{ delta | Format:'#,##0' }}</span>
+                            {% elseif value < prevValue %}
+                                <span style="color: lightcoral;">{{ delta | Format:'#,##0' }}</span>
+                            {% else %}
+                                <span>+/- 0</span>
+                            {% endif %}
+                        </span>
                     </div>
+            {% endfor %}
+            {% if numPartitions > 1 %}
+            <span class="metric-value mr-2">
+                <b>Total: </b>{% if totalValue && totalValue != '' %}{{ totalValue | Format:'#,##0' }} {% else %} <bolder>0</bolder> {% endif %}
+            </span>
+            <span class="metric-delta">
+                {% if totalDelta > 0 %}
+                    <span style="color: lightgreen;">+ {{ totalDelta | Format:'#,##0' }}</span>
+                {% elseif totalDelta < 0 %}
+                    <span style="color: lightcoral;">{{ totalDelta | Format:'#,##0' }}</span>
+                {% else %}
+                    <span>+/- 0</span>
                 {% endif %}
+            </span>
+            {% endif %}
+            {% if results[0].RelatedReportId > 0 %}
+                <div class='btn btn-default btn-block metric-report' style="border: none;">
+                    <a class width:100% href="https://{{ 'Global' | Page:'Host' }}/page/{{ reportPage }}?ReportId={{ results[0].RelatedReportId }}">Related Report</a>
+                </div>
+            {% endif %}
+            {% if detailPageId > 0 %}
+                <div style="font-size: .8rem;">
+                    <a href="https://{{ 'Global' | Page:'Host' }}/page/{{ detailPageId }}?MetricId={{ metric.Id }}">View Chart</a>
+                </div>
+            {% endif %}
             </div>
         {% endif %}
     {% endfor %}
+</div>
 </div>
