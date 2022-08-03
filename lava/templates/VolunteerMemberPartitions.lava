@@ -1,0 +1,56 @@
+{% sql topMostGroupId:'{{ topMostGroupId }}'%}
+WITH cte_serving AS (
+    SELECT
+        g.[Id]
+        ,g.[ParentGroupId]
+        ,g.[Name]
+        ,1 AS [Level]
+        ,CAST(g.[Id] AS VARCHAR(MAX)) AS Hierarchy
+		,COUNT(gm.[Id]) over (partition by g.[Id] order by g.[Id]) AS [MemberCount]
+		,COUNT(gm.[Id]) over (partition by g.[Id] order by g.[Id]) AS [InheritedMemberCount]
+		,g.[Name] AS [InheritedGroupName]
+		,g.[Id] AS [InheritedGroupId]
+    FROM
+        [Group] g
+		OUTER APPLY (SELECT * FROM [GroupMember] gm WHERE gm.[GroupId] = g.[Id] AND gm.[GroupMemberStatus] = 1) gm
+    WHERE
+        g.[ParentGroupId] = @topMostGroupId
+        AND g.[IsActive] = 1
+    UNION ALL
+    SELECT
+        cg.[Id]
+        ,cg.[ParentGroupId]
+        ,cg.[Name]
+        ,pg.[Level] + 1 AS [Level]
+        ,(pg.[Hierarchy] + '->' + CAST(cg.[Id] AS VARCHAR(MAX))) AS Hierarchy
+		,COUNT(gm.[Id]) over (partition by cg.[Id] order by cg.[Id]) AS [MemberCount]
+		,pg.[MemberCount] + COUNT(gm.[Id]) over (partition by cg.[Id] order by cg.[Id]) AS [InheritedMemberCount]
+		,pg.[InheritedGroupName]
+		,pg.[InheritedGroupId]
+    FROM
+        [Group] cg
+        INNER JOIN cte_serving pg ON pg.[Id] = cg.[ParentGroupId]
+		OUTER APPLY (SELECT * FROM [GroupMember] gm WHERE gm.[GroupId] = cg.[Id] AND gm.[GroupMemberStatus] = 1) gm
+    WHERE
+        cg.[IsActive] = 1
+        AND cg.[IsArchived] = 0
+)
+
+SELECT
+	SUM(x.[MemberCount]) AS [TotalMembers]
+    ,x.[InheritedGroupId] AS [GroupId]
+--    ,MAX(x.[InheritedGroupName]) AS [GroupName]
+FROM
+(
+    SELECT distinct
+        g.*
+    FROM
+        cte_serving g
+) x
+GROUP BY
+    x.[InheritedGroupId]
+{% endsql %}
+
+{% for result in results %}
+    {{ result.TotalMembers }}, {{ result.GroupId }}
+{% endfor %}
