@@ -1,0 +1,39 @@
+{% sql ministryName:'{{ ministryName }}', campusId:'{{ campusId }}', didAttend:'{{ didAttend }}'%}
+DECLARE @ministryGuid VARCHAR(50);
+
+SET @ministryGuid = (SELECT TOP 1
+						dv.[Guid]
+					FROM
+						[DefinedValue] dv
+					WHERE
+						dv.[DefinedTypeId] = 114 -- Ministry
+						AND dv.[Value] = @ministryName
+					)
+
+					DECLARE @lastSunday DATETIME = [dbo].ufnUtility_GetPreviousSundayDate();
+DECLARE @weekBeforeLastSunday DATETIME = DATEADD(day, -7, [dbo].ufnUtility_GetPreviousSundayDate())
+
+SELECT
+	COUNT(pa.PersonId) AS [AttendanceCount]
+FROM 
+	[EventItemOccurrence] AS eio
+	INNER JOIN [EventItem] ei ON ei.[Id] = eio.[EventItemId]
+	INNER JOIN [EventItemOccurrenceGroupMap] AS eiogm ON eiogm.EventItemOccurrenceId = eio.Id
+	INNER JOIN [AttendanceOccurrence] AS ao ON ao.GroupId = eiogm.[GroupId]
+	INNER JOIN [Attendance] AS a ON a.OccurrenceId = ao.Id
+	INNER JOIN [PersonAlias] AS pa ON pa.Id = a.PersonAliasId
+	INNER JOIN [AttributeValue] av ON av.[EntityId] = eio.[Id]
+WHERE 
+	(
+        (@campusId != '' AND eio.[CampusId] = @campusId)
+        OR (@campusId = '')
+    )
+	AND ao.[OccurrenceDate] > @weekBeforeLastSunday
+	AND ao.[OccurrenceDate] <= @lastSunday
+	AND a.DidAttend = @didAttend
+	AND av.[Value] = @ministryGuid
+{% endsql %}
+
+{% for result in results %}
+    {{ result.AttendanceCount }}
+{% endfor %}
