@@ -16,6 +16,7 @@ WITH cte_serving AS (
     WHERE
         g.[ParentGroupId] = @topMostGroupId
         AND g.[IsActive] = 1
+        AND g.[IsArchived] = 0
     UNION ALL
     SELECT
         cg.[Id]
