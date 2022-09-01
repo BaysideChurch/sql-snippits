@@ -19,6 +19,7 @@ if ( window.location == window.parent.location ) {
         window.intercomSettings = {
             api_base: "https://api-iam.intercom.io",
             app_id: "xs865k2t",
+            custom_launcher_selector:'#bcc-intercom-launcher',
             name: "{{ CurrentPerson.FullName }}",
             email: "{{ CurrentPerson.Email }}",
             user_id: "{{ CurrentPerson.Id }}",
