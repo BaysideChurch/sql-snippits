@@ -1,0 +1,49 @@
+{% comment %}
+    Used to launch the intercom widget from the Rock navigation section.
+    Must be placed in the 'Page Menu' block on the 'Navigation Zone'.
+{% endcomment %}
+
+<style>
+    div.intercom-lightweight-app-launcher {
+        display: none;
+    }
+    #bcc-intercom-launcher {
+        background: #0071b2;
+    }
+    #bcc-intercom-launcher:hover {
+        background: #006dcc;
+    }
+</style>
+
+<div id="bcc-intercom-launcher" style="box-shadow: none; cursor: pointer; width: 80px;">
+    <i class="fa fa-question-circle" style="padding: 24px 27px 0; font-size: 26px;"></i>
+    <span style="display: block; padding: 8px 11px 12px; font-size: 15px; font-weight: 600; font-family: sans-serif;">
+        IT HELP
+    </span>
+</div>
+
+<script>
+    $(function() {
+        const intercomLauncher = document.querySelector("div#bcc-intercom-launcher");
+        intercomLauncher.addEventListener("click", intercomClicked.bind());
+    });
+
+    function intercomClicked() {
+        var intercomIframe = document.querySelector("iframe.intercom-launcher-frame");
+        if (intercomIframe != null) {
+            var intercomIframeLauncher = intercomIframe.contentWindow.document.querySelector("div.intercom-launcher");
+            var isActive = intercomIframeLauncher.classList.contains("intercom-launcher-active");
+            if (!isActive) {
+                intercomIframe.style.display = null;
+            } else {
+                intercomIframe.style.display = "none";
+            }
+        } else {
+            setTimeout(function(){
+                var intercomIframe = document.querySelector("iframe.intercom-launcher-frame");
+                var intercomIframeLauncher = intercomIframe.contentWindow.document.querySelector("div.intercom-launcher");
+                intercomIframeLauncher.addEventListener("click", intercomClicked.bind());
+            }, 1500);
+        }
+    }
+</script>
