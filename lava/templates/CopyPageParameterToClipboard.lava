@@ -1,0 +1,58 @@
+{% comment %}
+    REQUIRED: {% assign targetPageParameter = '[insert page parameter name here (ex.'PersonId') ]' %}
+    OPTIONAL: {% assign customNamePageParameter = '[insert custom name here (ex.'Person ID') ]' %}
+    NOTE: Place required assign statement above lava include tag.
+
+    Used to copy a page parameter value to clipboard if target page parameter exists. An alert is displayed
+    to notify the user the copy was successful. The alert will be generated wherever include tag is placed.
+{% endcomment %}
+
+<div id="copy-page-parameter-to-clipboard-alert" class="alert alert-dismissible d-none" role="alert">
+    <span id="alert-message"></span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<script>
+    {% if targetPageParameter != null and targetPageParameter != empty %}
+
+        {% assign parameterValue = 'Global' | PageParameter:targetPageParameter %}
+
+        {% if parameterValue != null and parameterValue != empty %}
+
+            const value = {{ 'Global' | PageParameter:targetPageParameter }};
+
+            {% if customNamePageParameter != null %}
+                var name = '{{ customNamePageParameter }}';
+            {% else %}
+                var name = '{{ targetPageParameter }}';
+            {% endif %}
+
+            navigator.clipboard.writeText(value).then(function() {
+                showCopyPageParameterToClipboardAlert(true, name, value);
+            }, function(err) {
+                showCopyPageParameterToClipboardAlert(false, name, value);
+            });
+
+            function showCopyPageParameterToClipboardAlert(isCopied, name, value) {
+                if (isCopied) {
+                    var alertMessage = name + ' <strong>' + value + '</strong> was successfully copied to clipboard!';
+                    var alertClass = 'alert-success';
+                } else {
+                    var alertMessage = 'Unable to copy ' + name + ' <strong>' + value + '</strong> to clipboard!'
+                    var alertClass = 'alert-warning';
+                }
+
+                const clipboardAlert = document.querySelector('div#copy-page-parameter-to-clipboard-alert');
+                const clipboardMessage = clipboardAlert.querySelector('span#alert-message');
+
+                clipboardMessage.innerHTML = alertMessage;
+                clipboardAlert.classList.add(alertClass);
+                clipboardAlert.classList.remove('d-none');
+            }
+
+        {% endif %}
+
+    {% endif %}
+</script>
