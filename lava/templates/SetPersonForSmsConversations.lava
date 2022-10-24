@@ -1,0 +1,91 @@
+{% comment %}
+    Used for automatically setting person in the SMS conversations
+    block if the 'Person' id page parameter is present.
+
+    If conversations with the person exist, then filter to show person's
+    conversation history. If conversations do not exist, then a modal will
+    open to start a new message with the selected person.
+{% endcomment %}
+
+{% assign personId = 'Global' | PageParameter:'Person' %}
+
+{% if personId != null and personId != empty %}
+
+<style>
+    .updateprogress-bg.modal-backdrop {
+        z-index: 2000 !important;
+        background: rgba(240,243,246,0.9) !important;
+    }
+    .updateprogress-status {
+        z-index: 2001 !important;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        displayUpdateProgress(true);
+
+        const conversationList = document.querySelector('div.conversation-list');
+        const newMessageBtn = conversationList.querySelector('[id$=btnCreateNewMessage]');
+        const personFilterBtn = conversationList.querySelector('[id$=lbPersonFilter]');
+
+        personFilterBtn.click();
+        var personPicker = conversationList.querySelector('a.js-personpicker-toggle');
+        personPicker.click();
+        selectPersonInPicker(conversationList);
+
+        setTimeout(() => {
+            const recipientsList = document.querySelector('[id$=upRecipients]');
+            var emptyTable = recipientsList.querySelector('.table-empty');
+
+            if (emptyTable == null) {
+                // select from list
+                var topMessage = recipientsList.querySelector('td.grid-select-cell');
+                topMessage.click();
+                displayUpdateProgress(false);
+            } else {
+                // open modal and select
+                newMessageBtn.click();
+                setTimeout(() => {
+                    const newMessageModal = document.querySelector('[id$=mdNewMessage_modal_dialog_panel]');
+                    var personPicker = newMessageModal.querySelector('a.js-personpicker-toggle');
+                    personPicker.click();
+                    selectPersonInPicker(newMessageModal);
+                    setTimeout(() => {
+                        displayUpdateProgress(false);
+                    }, 3000);
+                }, 1000);
+            }
+        }, 3000);
+    });
+
+    function selectPersonInPicker(parent) {
+        var inputElem = parent.querySelector('[id$=tbSearchName]');
+        inputElem.value = '{{ personId }}';
+        inputElem.dispatchEvent(new KeyboardEvent('keydown', {'key': '{{ personId }}'}));
+        doubleClickPerson();
+    }
+
+    function doubleClickPerson() {
+        setTimeout(() => {
+            var radioElem = document.getElementById('{{ personId }}');
+            if (radioElem != null) {
+                radioElem.click();
+                radioElem.click();
+            }
+        }, 2000);
+    }
+
+    function displayUpdateProgress(isVisible) {
+        var updateProgressElem = document.querySelector('div#updateProgress');
+        if (isVisible) {
+            updateProgressElem.classList.remove('d-none');
+            updateProgressElem.classList.add('d-block');
+        } else {
+            updateProgressElem.classList.remove('d-block');
+            updateProgressElem.classList.add('d-none');
+        }
+    }
+</script>
+
+{% endif %}
