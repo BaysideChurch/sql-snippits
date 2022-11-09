@@ -1,0 +1,26 @@
+{% comment %}
+    Displays a 'User Information' alert when user clicks an excel download button.
+    Include this template where the alert message should be displayed.
+{% endcomment %}
+
+<div id="bcc-excel-download-alert" class="alert alert-danger d-none">
+    <strong>User Information Warning</strong><br>
+    Do not import personal user information into non-Bayside accounts such as Google Sheets, or use it to import into email tools like Mailchimp unless you have been given permission to do so. Groups, reports, and data views are not used as communication lists. If you need a communication list, contact IT. If you would like to send a communication to a group in Rock, you can send an email within Rock or a text message from Clearstream. Your group must have opted into communication by agreeing to receive communication from Bayside when they joined the group.
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll('.btn-excelexport').forEach(elem => {
+            elem.addEventListener('click', displayExcelAlert);
+        });
+    });
+
+    function displayExcelAlert() {
+        var alertElem = document.getElementById('bcc-excel-download-alert');
+        if (alertElem != null) {
+            alertElem.classList.remove('d-none');
+            alertElem.scrollIntoView();
+            window.scrollBy(0, -100);
+        }
+    }
+</script>
