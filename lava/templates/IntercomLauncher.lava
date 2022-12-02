@@ -1,49 +1,145 @@
 {% comment %}
-    Used to launch the intercom widget from the Rock navigation section.
-    Must be placed in the 'Page Menu' block on the 'Navigation Zone'.
+
+    Adds functionality and control to the Intercom modal. Handles the
+    visibility and function of the close modal button. Creates ability
+    to display Intercom articles inside the Intercom modal.
+
+    Use Case:
+    (1) - Toggle Intercom modal from navigation section.
+        ## -- code --
+        <div id="bcc-intercom-launcher">
+            <i class="fa fa-question-circle"></i>
+            <span>IT HELP</span>
+        </div>
+        ## -- end code --
+        Note: Paste under page nav lava of page meny under navigation zone.
+
+    (2) - Display Intercom articles inside Intercom modal.
+        ## -- code --
+        <i id="bcc-intercom-article-launcher" class="fa fa-question-circle fa-2x" data-value="1234567"></i>
+        ## -- end code --
+        Note: Modify data-value="1234567" with article id.
+
 {% endcomment %}
 
-<style>
-    div.intercom-lightweight-app-launcher {
+{% stylesheet %}
+    div.intercom-lightweight-app-launcher,
+    .intercom-namespace iframe.intercom-launcher-frame {
         display: none;
     }
+
     #bcc-intercom-launcher {
         background: #0071b2;
+        box-shadow: none;
+        cursor: pointer;
+        width: 80px;
     }
+
     #bcc-intercom-launcher:hover {
         background: #006dcc;
     }
-</style>
 
-<div id="bcc-intercom-launcher" style="box-shadow: none; cursor: pointer; width: 80px;">
-    <i class="fa fa-question-circle" style="padding: 24px 27px 0; font-size: 26px;"></i>
-    <span style="display: block; padding: 8px 11px 12px; font-size: 15px; font-weight: 600; font-family: sans-serif;">
-        IT HELP
-    </span>
-</div>
+    #bcc-intercom-launcher i {
+        padding: 24px 27px 0;
+        font-size: 26px;
+    }
 
-<script>
-    $(function() {
-        const intercomLauncher = document.querySelector("div#bcc-intercom-launcher");
-        intercomLauncher.addEventListener("click", intercomClicked.bind());
-    });
+    #bcc-intercom-launcher span {
+        display: block;
+        padding: 8px 11px 12px;
+        font-size: 15px;
+        font-weight: 600;
+        font-family: sans-serif;
+    }
 
-    function intercomClicked() {
-        var intercomIframe = document.querySelector("iframe.intercom-launcher-frame");
-        if (intercomIframe != null) {
-            var intercomIframeLauncher = intercomIframe.contentWindow.document.querySelector("div.intercom-launcher");
-            var isActive = intercomIframeLauncher.classList.contains("intercom-launcher-active");
-            if (!isActive) {
-                intercomIframe.style.display = null;
-            } else {
-                intercomIframe.style.display = "none";
-            }
-        } else {
-            setTimeout(function(){
-                var intercomIframe = document.querySelector("iframe.intercom-launcher-frame");
-                var intercomIframeLauncher = intercomIframe.contentWindow.document.querySelector("div.intercom-launcher");
-                intercomIframeLauncher.addEventListener("click", intercomClicked.bind());
-            }, 1500);
+    #bcc-intercom-article-launcher {
+        color: #0071b2;
+        cursor: pointer;
+    }
+
+    @media only screen and (min-width: 651px) {
+        #bcc-intercom-close-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 0;
+            color: #0071b2;
+            cursor: pointer;
+            background-color: #fff;
+            border-radius: 100px;
+            z-index: 2147483000;
+            transition: 0.5s;
+            filter: drop-shadow(rgba(0, 0, 0, 0.06) 0px 1px 6px)
+                    drop-shadow(rgba(0, 0, 0, 0.16) 0px 2px 32px);
         }
     }
+{% endstylesheet %}
+
+<i id="bcc-intercom-close-button" class="fa fa-chevron-circle-down fa-4x" style="display: none;"></i>
+
+<script>
+
+    var intercomLauncher = null;
+    var intercomCloseButton = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        intercomLauncher = document.querySelector("div#bcc-intercom-launcher");
+        if (intercomLauncher != null) {
+            intercomLauncher.addEventListener('click', intercomToggleButton);
+        }
+
+        intercomCloseButton = document.querySelector('#bcc-intercom-close-button');
+        if (intercomCloseButton != null) {
+            intercomCloseButton.addEventListener('click', intercomHide);
+        }
+
+        document.querySelectorAll('#bcc-intercom-article-launcher').forEach(elem => {
+            elem.addEventListener('click', intercomShowArticle);
+        });
+
+        /* check if intercom is already open */
+        setTimeout(() => {
+            var intercomMessengerFrame = document.querySelector('.intercom-messenger-frame')
+            if (intercomMessengerFrame != null) {
+                intercomShowButton();
+            }
+        }, 1500)
+    });
+
+    function intercomShowArticle() {
+        var articleId = this.getAttribute('data-value');
+        Intercom('showArticle', articleId);
+        intercomShowButton();
+    }
+
+    function intercomToggleButton() {
+        if (intercomCloseButton != null) {
+            var isOpen = intercomCloseButton.classList.contains("intercom-open");
+            if (isOpen) {
+                intercomHideButton();
+            } else {
+                intercomShowButton();
+            }
+        }
+    }
+
+    function intercomShowButton() {
+        if (intercomCloseButton != null) {
+            intercomCloseButton.classList.add("intercom-open");
+            intercomCloseButton.style.display = "inline-block";
+        }
+    }
+
+    function intercomHide() {
+        Intercom('hide');
+        intercomHideButton();
+    }
+
+    function intercomHideButton() {
+        if (intercomCloseButton != null) {
+            intercomCloseButton.classList.remove("intercom-open");
+            intercomCloseButton.style.display = "none";
+        }
+    }
+
 </script>
