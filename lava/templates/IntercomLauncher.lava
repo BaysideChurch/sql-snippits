@@ -12,7 +12,7 @@
             <span>IT HELP</span>
         </div>
         ## -- end code --
-        Note: Paste under page nav lava of page meny under navigation zone.
+        Note: Paste under PageNav.lava of Page Menu block in Navigation Zone.
 
     (2) - Display Intercom articles inside Intercom modal.
         ## -- code --
