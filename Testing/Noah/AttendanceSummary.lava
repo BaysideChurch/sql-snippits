@@ -1,0 +1,86 @@
+{% assign groupId = 'Global' | PageParameter:'GroupId' %}
+
+{% sql groupId:'{{ groupId }}'%}
+WITH cte_attendanceOccurrence AS
+(
+SELECT
+	ao.[Id] AS [OccurrenceId]
+	,ao.[OccurrenceDate]
+	,DATEPART(dw, ao.[OccurrenceDate]) AS [DayOfWeek]
+	,ao.[DidNotOccur]
+	,ao.[ScheduleId] AS [AttendanceScheduleId]
+	,(CASE
+        WHEN EXISTS(
+            SELECT NULL AS [EMPTY]
+            FROM [Attendance] AS a
+            WHERE a.[OccurrenceId] = ao.[Id]
+            ) THEN 1
+        ELSE 0
+     END) AS [AttendanceEntered]
+     ,(SELECT
+          CASE WHEN
+              [TotalCount] > 0
+                  THEN CONVERT(DECIMAL(25,13), [DidAttendCount]) / CONVERT(DECIMAL(25,13), [TotalCount])
+                  ELSE 0.0
+    	  END AS [AttendanceRate]
+      FROM
+      (
+          SELECT
+        	  SUM(CASE WHEN a.[DidAttend] = 1 THEN 1 ELSE 0 END) AS [DidAttendCount]
+        	  ,COUNT(*) AS [TotalCount]
+          FROM
+        	  [Attendance] a
+          WHERE
+              a.[OccurrenceId] = ao.[Id]
+      )  attendees) As [AttendanceRate]
+     ,g.[Id] As [GroupId]
+     ,g.[Name] As [GroupName]
+FROM
+	[AttendanceOccurrence] ao
+	INNER JOIN [Schedule] s ON s.[Id] = ao.[ScheduleId]
+	INNER JOIN [Group] g ON g.[Id] = ao.[GroupId]
+WHERE
+	ao.[ScheduleId] IS NOT NULL
+	AND g.[Id] = @groupId
+)
+
+SELECT TOP 5
+    reminders.*
+    ,AVG(CASE WHEN reminders.[DidNotOccur] != 1 THEN reminders.[AttendanceRate] END) over () AS [AvgAttendanceRate]
+FROM
+    cte_attendanceOccurrence reminders
+ORDER BY
+    reminders.[OccurrenceDate] DESC
+{% endsql %}
+{{ results }}
+
+{% if results != empty %}
+
+{% assign latestDate = results[0].OccurrenceDate %}
+<div class="panel panel-block">
+    <div class="panel-heading panel-follow">
+        <h1 class="panel-title pull-left">Attendance Summary for {{ results[0].GroupName }}</h1>
+    </div>
+    <div class="panel-body">
+        {% if latestDate | DaysSince > 30 %}
+        <p>Group has not met in over <span>30</span> days</p>
+        {% endif %}
+        <p>
+            Avg. Attendance Rate: {{ results[0].AvgAttendanceRate | Format:'P' }}
+        </p>
+        {% for occurrence in results %}
+        <div class="my-1">
+        Week of <b>{{ occurrence.OccurrenceDate | Date:'M/d/yyyy' }}</b> : 
+        {% if occurrence.DidNotOccur == 'False' %}
+        <i class="fa fa-check" style="color: lightgreen;"></i>
+        <span>
+            Attendance Rate: {{ occurrence.AttendanceRate | Format:'P' }}
+        </span>
+        {% else %}
+        <i class="fa fa-times" style="color: salmon;"></i>
+        {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

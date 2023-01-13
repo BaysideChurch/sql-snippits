@@ -1,0 +1,130 @@
+{% if CurrentPerson.Id == 135445%}
+{% comment %}
+or CurrentPerson.Id == 247553
+{% endcomment %}
+{% assign campusId = 2 %}
+
+{% sql campusId:'{{ campusId }}' %}
+SELECT
+	COUNT(filteredPeopleWithAge.[AgeRange]) AS [PopCount]
+	,CAST(COUNT(*) * 100.00 / SUM(COUNT(*)) over () AS DECIMAL(18,1)) AS [Percentage]
+	,filteredPeopleWithAge.[AgeRange] AS [AgeRange]
+FROM
+	(
+	SELECT
+		personWithAge.[Id]
+		,personWithAge.[BirthYear]
+		,personWithAge.[Age]
+		,CASE
+			WHEN personWithAge.[Age] BETWEEN 13 AND 17 THEN '13-17 years'
+			WHEN personWithAge.[Age] BETWEEN 18 AND 24 THEN '18-24 years'
+			WHEN personWithAge.[Age] BETWEEN 25 AND 34 THEN '25-34 years'
+			WHEN personWithAge.[Age] BETWEEN 35 AND 44 THEN '35-44 years'
+			WHEN personWithAge.[Age] BETWEEN 45 AND 54 THEN '45-54 years'
+			WHEN personWithAge.[Age] BETWEEN 55 AND 64 THEN '55-64 years'
+			WHEN personWithAge.[Age] >= 65 THEN '65+ years'
+			ELSE NULL
+		END AS [AgeRange]
+	FROM
+	(
+		SELECT
+			p.[Id]
+			,p.[BirthYear]
+			,[dbo].[ufnCrm_GetAge](p.[BirthDate]) AS [Age]
+		--	,DATEDIFF(day, p.[BirthDate], GETDATE()) / 364.2425 AS [AgeDiff]
+		FROM
+			[Person] p
+		WHERE
+			p.[IsDeceased] = 0
+			AND p.[RecordTypeValueId] = 1
+			AND p.[RecordStatusValueId] != 4
+			AND p.[BirthYear] IS NOT NULL
+			AND p.[BirthYear] > 1910
+			AND ((@campusId IS NULL OR @campusId = '') OR (@campusId IS NOT NULL AND p.[PrimaryCampusId] = @campusId))
+			--AND DATEDIFF(day, p.[BirthDate], GETDATE()) / 364.2425 >= 13
+		) personWithAge
+		WHERE
+			personWithAge.[Age] > 12
+	) filteredPeopleWithAge
+GROUP BY
+	filteredPeopleWithAge.[AgeRange]
+ORDER BY
+    [AgeRange]
+{% endsql %}
+
+<style>
+.round-panel {
+    background: #fff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 1rem !important;
+    margin-bottom: 1rem !important;
+}
+.round-panel .panel-heading {
+    background: #f3f3f3 !important;
+    border-radius: 1rem 1rem 0 0 !important;
+}
+
+.ageRangeBox {
+    display: grid;
+    grid-template-columns: 2fr 3fr 1fr;
+}
+
+.ageRange {
+    background: #000000;
+    padding: 4px;
+    box-sizing: border-box;
+    border: 1px solid #0fffb7;
+    border-radius: 2px;
+}
+
+.demographic_percentage {
+    background: #00aada;
+    border-radius: 0.75rem;
+    height: 1.25rem;
+    justify-self: end;
+    margin: auto 1.5rem auto 0;
+}
+
+.age-medal-icon {
+    display: inline-block;
+}
+
+
+@media (max-width: 640px) {
+    .age-medal-icon { display: none }
+}
+</style>
+
+{% assign orderedResults = results | OrderBy:'Percentage desc' %}
+{% assign highestResult = orderedResults | First %}
+{% assign secondPlace = orderedResults[1] %}
+{% assign thirdPlace = orderedResults[2] %}
+{% assign lowestResult = orderedResults | Last %}
+
+<div class="round-panel">
+    <div class="panel-heading" style="margin-bottom:1rem;">
+        <h2 class="panel-title">
+            <i class="fa fa-id-card mr-2"></i>Age Demographics
+        </h2>
+    </div>
+    {% comment %}
+    class="container"
+    {% endcomment %}
+    <div>
+        {% for row in results %}
+        <div class="ageRangeBox">
+            <div style="justify-self: end; margin: 0.5rem 0;">
+                <span class="age-medal-icon">
+                {% if row.AgeRange == highestResult.AgeRange %}🥇
+                {% elseif row.AgeRange == secondPlace.AgeRange %}🥈
+                {% elseif row.AgeRange == thirdPlace.AgeRange %}🥉
+                {% endif %}
+                </span>
+                <span>{{ row.AgeRange }}</span>
+            </div>
+            <div class="demographic_percentage" style="width: {{ row.Percentage | Times:'2' }}%;"></div>
+            <p style="margin: 0.5rem 0;">{{ row.Percentage }}%</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
