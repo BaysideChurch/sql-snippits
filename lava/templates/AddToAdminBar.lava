@@ -1,121 +1,33 @@
 {% assign isAdmin = CurrentPerson | Group: "2" %}
-{% if isAdmin != empty %}
 
-{% assign pageId = 'Global' | Page:'Id' %}
-{% assign now = 'Now' %}
-{% assign lastDay =  now | Date:'yyyyMMdd' %}
-{% assign firstDay = now | DateAdd:-6 | Date:'yyyyMMdd' %}
+{% if isAdmin != null and isAdmin != '' and isAdmin != empty %}
 
-{% sql %}
-    SELECT
-    	*
-    FROM
-    (
-        SELECT
-            COUNT(*) AS [Count],
-            pe.[Id] AS [PersonId],
-            MAX(pe.[FirstName] + ' ' + pe.[LastName]) AS [Name]
-        FROM
-            [Page] p
-            INNER JOIN [InteractionComponent] ic ON ic.[EntityId] = p.[Id]
-            INNER JOIN [Interaction] i ON i.[InteractionComponentId] = ic.[Id]
-            LEFT JOIN [PersonAlias] pa ON i.[PersonAliasId] = pa.[Id]
-            LEFT JOIN [Person] pe ON pe.[Id] = pa.[PersonId]
-        WHERE
-            p.[Id] = {{ pageId }} AND
-            i.[InteractionDateKey] >= '{{ firstDay }}' AND
-            i.[InteractionDateKey] <= '{{ lastDay }}'
-        GROUP BY
-            pe.[Id]
-    ) x
-    ORDER BY
-       x.[Count] DESC, x.[Name] ASC
-{% endsql %}
+    {% assign pageId = 'Global' | Page:'Id' %}
 
-{% assign total = 0 %}
-{% for result in results %}
-    {% assign total = total | Plus:result.Count %}
-{% endfor %}
-
-<style>
-    #cms-admin-views-modal .modal-body {
-        max-height: 500px !important;
-        overflow: scroll !important;
-        padding: 0 !important;
-    }
-    #cms-admin-views-modal .person-view-count {
-        padding: 0.5rem 1rem;
-        border-bottom: 1px solid #ddd;
-    }
-    #cms-admin-views-modal .total-count {
-        padding: 0.5rem 1rem;
-    }
-    #cms-admin-addition {
-        display: none;
-    }
-    @media screen and (min-width: 980px) {
-        #cms-admin-views-modal {
-            transform: translate(-50%, -50%) !important;
-            margin: auto !important;
+    <style>
+        #cms-admin-addition {
+            display: none;
         }
-    }
-</style>
+    </style>
 
-<div class="modal fade" id="cms-admin-views-modal" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">
-                    <i class="fa fa-eye mr-2"></i>{{ total }} page views in the past 7 days
-                </h4>
-            </div>
-            <div class="modal-body">
-                {% for result in results %}
-                    {% if result.Name %}
-                        {% assign name = result.Name %}
-                    {% else %}
-                        {% assign name = "Unknown" %}
-                    {% endif %}
-
-                    <div class="person-view-count">
-                        {% if result.PersonId > 0 %}
-                            <a target="_blank" href="/Person/{{ result.PersonId }}">{{ name }}</a>
-                        {% else %}
-                            {{ name }}
-                        {% endif %}
-                        <span style="float: right;">{{ result.Count }} views</span>
-                    </div>
-                {% endfor %}
-                <div class="total-count">
-                    Total:
-                    <span style="float: right;">{{ total }} views</span>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-            </div>
+    <div id="cms-admin-addition">
+        <div class="button-bar">
+            <a target="_blank" href="{{ 'Global' | Attribute:'InternalApplicationRoot' }}interactions?pageId={{ pageId }}" class="btn block-config js-block-config" title="Page Views">
+                <i class="fa fa-eye"></i>
+            </a>
         </div>
     </div>
-</div>
 
-<div id="cms-admin-addition">
-    <div class="button-bar">
-        <a class="btn block-config js-block-config" data-toggle="modal" data-target="#cms-admin-views-modal" href="" title="Page Viws Past 7 Days">
-            <i class="fa fa-eye mr-1"></i>{{ total }}
-        </a>
-    </div>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const cmsAdminFooter = document.querySelector('#cms-admin-footer');
-        const cmsAdminAddition = document.querySelector('#cms-admin-addition');
-        if (cmsAdminFooter != null && cmsAdminAddition != null) {
-            while (cmsAdminAddition.childNodes.length > 0) {
-                cmsAdminFooter.appendChild(cmsAdminAddition.childNodes[0]);
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cmsAdminFooter = document.querySelector('#cms-admin-footer');
+            const cmsAdminAddition = document.querySelector('#cms-admin-addition');
+            if (cmsAdminFooter != null && cmsAdminAddition != null) {
+                while (cmsAdminAddition.childNodes.length > 0) {
+                    cmsAdminFooter.appendChild(cmsAdminAddition.childNodes[0]);
+                }
             }
-        }
-    });
-</script>
+        });
+    </script>
 
 {% endif %}
