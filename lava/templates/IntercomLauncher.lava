@@ -24,7 +24,8 @@
 
 {% stylesheet %}
     div.intercom-lightweight-app-launcher,
-    .intercom-namespace iframe.intercom-launcher-frame {
+    .intercom-namespace iframe.intercom-launcher-frame,
+    .intercom-namespace .intercom-dfosxs {
         display: none;
     }
 
