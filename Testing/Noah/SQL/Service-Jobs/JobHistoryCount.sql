@@ -28,13 +28,14 @@ FROM
             [ServiceJob] sj
             INNER JOIN [ServiceJobHistory] sjh ON sjh.ServiceJobId = sj.Id
         WHERE
-            CAST(sjh.CreatedDatetime AS DATE) = '01-11-2023'
+            CAST(sjh.CreatedDatetime AS DATE) = '01-26-2023'
+            --AND CAST(sjh.CreatedDatetime AS DATE) >= '01-18-2023'
         ) x
     ) y
 --WHERE
-    /*y.NextStatus = 'Exception'
+    --y.ServiceJobId NOT IN (50, 57, 9, 62, 45, 23, 16, 110, 103, 22, 43, 10, 40, 34, 8, 132, 51, 60, 128, 13, 1, 56, 89, 135, 123, 119, 139, 66, 52, 136)
+    /*(y.NextStatus = 'Exception'
     OR y.PreviousStatus = 'Exception'
-    OR y.Status = 'Exception'
-    */
+    OR y.Status = 'Exception')*/
 ORDER BY
     y.RowNum, y.Status

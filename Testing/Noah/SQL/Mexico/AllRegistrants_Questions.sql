@@ -143,7 +143,7 @@ WHERE
             [registrant_values] rv
         ) t
         INNER JOIN [FieldType] ft ON ft.[Id] = t.[FieldTypeId]
-),pivot_info AS (
+)/*,pivot_info AS (
     SELECT
         *
     FROM
@@ -250,13 +250,30 @@ WHERE
                 ,[InternalComments]
             )
         ) as pivoted
-)
+)*/
 
+ SELECT
+        rf.[AttributeName]
+        ,rf.PersonFieldTypeName
+        ,rf.[AttributeKey]
+        ,rf.[AttributeId]
+        ,rf.[FieldTypeId]
+        ,av.[Value]
+        ,r.*
+    FROM
+        [registrant_fields] rf
+        LEFT JOIN [AttributeValue] av ON av.[AttributeId] = rf.[AttributeId]
+        RIGHT JOIN [registrants] r ON r.PersonId = av.[EntityId]
+            AND rf.[InstanceId] = r.[RegistrationInstanceId]
+    WHERE
+        --rf.FieldSource != 4 -- Person Attribute;
+        rf.PersonFieldType = 8
+/*
 SELECT
     *
 FROM
     [everyone] pi
-
+*/
 
 /*
 Attribute

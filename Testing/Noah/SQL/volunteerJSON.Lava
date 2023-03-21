@@ -1,0 +1,57 @@
+{% assign volunteerChoices = 'Global' | PageParameter:'Selection' %}
+{% assign splitChoices = volunteerChoices | Split:',' %}
+{% assign realJSON = '{ "Items": [' %}
+
+{% for guid in splitChoices %}
+{% contentchannelitem where:'Guid == "{{ guid }}"' limit:'1' %}
+    {% assign ccItem = contentchannelitemItems[0] %}
+    {% assign contentItemId = ccItem.Id %}
+    {% assign campus = ccItem | Attribute:'Campus' %}
+    {% assign campusId = ccItem | Attribute:'Campus','RawValue' %}
+    {% assign opportunity = ccItem | Attribute:'ConnectionOpportunity','Object' %}
+    {% assign fields = ccItem | Attribute:'VolunteerApplicationFields' %}
+{% endcontentchannelitem %}
+{% capture contentJSON %}
+{
+    "IndexKey": "{{ forloop.index }}",
+    "ContentItemId": "{{ contentItemId }}",
+    "Opportunity": {
+        "Name": "{{ opportunity.Name }}",
+        "Id": "{{ opportunity.Id }}",
+        "Guid": "{{ opportunity.Guid }}",
+        "ConnectionTypeId": "{{ opportunity.ConnectionTypeId }}"
+    },
+    "CampusKey": {
+        "Name": "{{ campus }}",
+        "Id": "{{ campusId }}"
+    },
+    "VolunteerFields": "{{ fields }}"
+}
+{% endcapture %}
+
+{% capture commaJSON %}{% unless forloop.first == true %},{% endunless %}{{ contentJSON }}{% endcapture %}
+{% assign realJSON = realJSON | Append:commaJSON %}
+{% endfor %}
+
+{% assign realJSON = realJSON | Append:']}' %}
+{{ realJSON }}
+
+------
+
+{% assign summaryNote = Workflow | Attribute:'FormResponse' %}
+{% assign person = Workflow | Attribute:'Person','Object' %}
+{% assign opportunities = Workflow | Attribute:'Opportunities' %}
+{% assign opportunityList = opportunities | FromJSON %}
+{% assign workflowType = 801 %}
+
+{% for item in opportunityList.Items %}
+    Launch a workflow for this: {{ item }}.<br>
+    {{ item.Opportunity.Name }} : {{ item.Opportunity.Guid }}<br>
+    {{ item.CampusKey.Name }} : {{ item.CampusKey.Id }}<br>
+    {% campus id:'{{ item.CampusKey.Id }}' limit:'1' select:'new ( Guid )' %}
+        {% assign campusGuid = campusItems[0].Guid %}
+    {% endcampus %}
+    Campus Guid: {{ campusGuid }}<br>
+    Here we would then launch workflows for each item.
+    workflowactivate workflowtype:'{{ workflowType }}' Person:'{{ person.PrimaryAlias.Guid }}' Summary:'{{ summaryNote }}' CampusKey:'{{ campusGuid }}' ConnectionOpportunity:'{{ item.Opportunity.Guid }}'
+{% endfor %}

@@ -10,6 +10,8 @@ FROM
 WHERE
     p.[Email] != ''
     AND p.[ConnectionStatusValueId] NOT IN (833, 835)
+    AND p.RecordTypeValueId = 1
+    AND p.IsDeceased = 0
     AND p.[RecordStatusValueId] IN (3, 5)
     AND p.[PrimaryCampusId] NOT IN (6,9)
 ) x
