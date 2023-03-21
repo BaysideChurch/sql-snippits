@@ -1,0 +1,73 @@
+{% sql topMostGroupId:'{{ topMostGroupId }}', campusId:'{{ campusId }}', didAttend:'{{ didAttend }}'%}
+DECLARE @lastSunday DATETIME = [dbo].ufnUtility_GetPreviousSundayDate();
+DECLARE @weekBeforeLastSunday DATETIME = DATEADD(day, -7, [dbo].ufnUtility_GetPreviousSundayDate());
+
+WITH cte_serving AS (
+    SELECT
+        g.[Id]
+        ,g.[ParentGroupId]
+        ,g.[Name]
+        ,1 AS [Level]
+		,g.[Name] AS [InheritedGroupName]
+		,g.[Id] AS [InheritedGroupId]
+		,g.[CampusId]
+    FROM
+        [Group] g
+    WHERE
+        g.[ParentGroupId] = @topMostGroupId
+        AND g.[IsActive] = 1
+        AND g.[IsArchived] = 0
+    UNION ALL
+    SELECT
+        cg.[Id]
+        ,cg.[ParentGroupId]
+        ,cg.[Name]
+        ,pg.[Level] + 1 AS [Level]
+		,pg.[InheritedGroupName]
+		,pg.[InheritedGroupId]
+		,cg.[CampusId]
+    FROM
+        [Group] cg
+        INNER JOIN cte_serving pg ON pg.[Id] = cg.[ParentGroupId]
+    WHERE
+        cg.[IsActive] = 1
+        AND cg.[IsArchived] = 0
+)
+
+SELECT
+	COUNT(*) AS [AttendanceCount]
+	,servingGroups.[InheritedGroupId]
+--	,MAX(servingGroups.[InheritedGroupName])
+FROM
+	
+	[AttendanceOccurrence] AS ao
+	INNER JOIN [Attendance] AS a ON a.OccurrenceId = ao.Id
+	INNER JOIN [PersonAlias] AS pa ON pa.Id = a.PersonAliasId
+	INNER JOIN (SELECT 
+		g.[Id] AS [GroupId]
+		,MAX(g.[Name]) AS [GroupName]
+		,g.[InheritedGroupId]
+		,MAX(g.[InheritedGroupName]) As [InheritedGroupName]
+		,MAX(g.[CampusId]) AS [CampusId]
+	FROM
+		cte_serving g
+	GROUP BY
+	   g.[InheritedGroupId], g.[Id]
+	) servingGroups ON servingGroups.[GroupId] = ao.[GroupId]
+WHERE 
+	(
+		(@campusId != '' AND servingGroups.[CampusId] = @campusId)
+		OR (@campusId = '')
+	)
+	AND ao.[OccurrenceDate] > @weekBeforeLastSunday
+	AND ao.[OccurrenceDate] <= @lastSunday
+	AND a.DidAttend = @didAttend
+GROUP BY
+	servingGroups.[InheritedGroupId]
+HAVING
+	COUNT(*) > 0
+{% endsql %}
+
+{% for result in results %}
+{{ result.AttendanceCount }}, {{ result.InheritedGroupId }}
+{% endfor %}
