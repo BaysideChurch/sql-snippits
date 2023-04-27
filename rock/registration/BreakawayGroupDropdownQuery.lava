@@ -1,0 +1,89 @@
+{% assign instanceId = 'Global' | PageParameter:'RegistrationInstanceId' | WithFallback:'','' %}
+{% assign slug = 'Global' | PageParameter:'Slug' | WithFallback:'','' %}
+{% assign registrantId = 'Global' | PageParameter:'RegistrantId' | WithFallback:'','' %}
+{% assign registrationId = 'Global' | PageParameter:'RegistrationId' | WithFallback:'','' %}
+{% assign includeAllGroups = 'false' %}
+
+{% if instanceId != '' %}
+    {% comment %}
+        want to include all groups (incl private) when looking at an instance. IE placement, etc
+    {% endcomment %}
+    {% assign includeAllGroups = 'true' %}
+{% endif %}
+
+{% if slug != '' and instanceId == '' %}
+    {% comment %} get the reg inst id from linkage with slug {% endcomment %}
+    {% sql slug:'{{ slug }}' return:'linkages' %}
+        SELECT TOP 1
+            [RegistrationInstanceId]
+        FROM
+            [EventItemOccurrenceGroupMap]
+        WHERE
+            [UrlSlug] = @slug
+    {% endsql %}
+
+    {% for linkage in linkages %}
+        {% assign instanceId = linkage.RegistrationInstanceId %}
+    {% endfor %}
+{% endif %}
+
+{% if registrantId != '' and instanceId == '' %}
+    {% comment %}want to include all groups (incl private) when looking at a registrant{% endcomment %}
+    {% assign includeAllGroups = 'true' %}
+
+    {% sql registrantId:'{{ registrantId }}' return:'registrants' %}
+        SELECT TOP 1
+            r.[RegistrationInstanceId]
+        FROM
+            [RegistrationRegistrant] rr
+            LEFT JOIN [Registration] r on r.[Id] = rr.[RegistrationId]
+        WHERE
+            rr.[Id] = @registrantId
+    {% endsql %}
+
+    {% for registrant in registrants %}
+        {% assign instanceId = registrant.RegistrationInstanceId %}
+    {% endfor %}
+{% endif %}
+
+{% if registrationId != '' and instanceId == '' %}
+    {% comment %}want to include all groups (incl private) when looking at a registration{% endcomment %}
+    {% assign includeAllGroups = 'true' %}
+
+    {% sql registrationId:'{{ registrationId }}' return:'registrations' %}
+        SELECT TOP 1
+            r.[RegistrationInstanceId]
+        FROM
+            [Registration] r
+        WHERE
+            r.[Id] = @registrationId
+    {% endsql %}
+
+    {% for registration in registrations %}
+        {% assign instanceId = registration.RegistrationInstanceId %}
+    {% endfor %}
+{% endif %}
+
+{% registrationinstance id:'{{ instanceId }}' %}
+    {% assign instanceFound = registrationinstanceItems | Size %}
+
+    {% if instanceFound == 1 %}
+        {% assign regInstance = registrationinstanceItems[0] %}
+        {% assign parentGroupId = regInstance | Attribute:'DemographicParentGroup','Id' %}
+        SELECT TOP 100
+            g.[Name] AS [Text]
+            ,g.[Id] AS [Value]
+        FROM
+            [Group] g
+        WHERE
+            g.[ParentGroupId] = {{ parentGroupId }} and
+            g.[IsActive] = 1 and
+            g.[IsArchived] = 0
+
+            {% if includeAllGroups == 'false' %}
+                AND g.[IsPublic] = 1
+            {% endif %}
+        ORDER BY
+            (CASE WHEN g.[Name] LIKE '[a-z]%' THEN 0 ELSE 1 END), g.[Name] ASC
+    {% endif %}
+{% endregistrationinstance %}
