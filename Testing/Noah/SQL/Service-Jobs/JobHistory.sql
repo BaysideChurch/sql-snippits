@@ -32,7 +32,7 @@ FROM
     ,(3 * x.[StdDevTimeElapsed]) + x.[AvgTimeElapsed] AS [Upper3rdBound]
 FROM
 (SELECT
-    TOP 1000
+    TOP 10000
     sj.[Id]
     ,sj.[Name]
     ,sj.CronExpression
@@ -50,6 +50,7 @@ FROM
     INNER JOIN [ServiceJobHistory] sjh ON sjh.[ServiceJobId] = sj.[Id]
 WHERE
     sj.[IsActive] = 1
+    AND sjh.CreatedDateTime >= CAST(GETDATE() AS DATE)
 GROUP BY
     sj.[Id], sj.[Name], sj.[CronExpression], sj.[LastRunDurationSeconds], sj.[LastSuccessfulRunDateTime], sj.[LastStatus]
 ) x
