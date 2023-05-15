@@ -1,0 +1,16 @@
+{% comment %}
+    This code snippet hides the cms admin footer element by setting its display property
+    to "none" with the !important rule. The code is executed when the current window is
+    embedded within another window or iframe.
+{% endcomment %}
+
+{% javascript %}
+    if (window.location !== window.parent.location) {
+        document.addEventListener("DOMContentLoaded", () => {
+            const cmsAdminFooter = document.getElementById("cms-admin-footer");
+            if (cmsAdminFooter != null) {
+                cmsAdminFooter.style.setProperty("display", "none", "important");
+            }
+        });
+    }
+{% endjavascript %}
