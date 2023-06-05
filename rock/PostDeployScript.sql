@@ -21,7 +21,7 @@ GO
 
 -- ADD 'TEST' BANNER
 UPDATE B SET 
-	  [PreHtml] = '<h4 style="position:absolute;left:80px;top:6px; color: black;">You are connected to the <strong>Test</strong> database.</h4><script>$(".navbar-static-top").css("background-color","burlywood");</script>'
+	  [PreHtml] = '<h4 style="position:absolute;left:80px;top:6px; color: black;">You are connected to the <strong>STAGE</strong> database.</h4><script>$(".navbar-static-top").css("background-color","burlywood");</script>'
 	, [ModifiedDateTime] = GETDATE()
 FROM [Block] B
 INNER JOIN [BlockType] T ON T.[Id] = B.[BlockTypeId]
