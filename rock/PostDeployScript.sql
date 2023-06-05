@@ -42,8 +42,9 @@ UPDATE [Person]
 set [Email] = LOWER(dbo.[ufnUtility_RemoveNonAlphaCharacters]([NickName])) + LOWER(dbo.[ufnUtility_RemoveNonAlphaCharacters]([LastName])) + '@safety.netz'
 WHERE [Email] IS NOT NULL
 
+-- The mail transport and medium no longer require updating due to us now using the HTTP API in Mailgun
 -- Update the Mail Medium/Transport settings to use SMTP with Localhost/25
-DECLARE @SMTPEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Communication.Transport.SMTP' )
+/* DECLARE @SMTPEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Communication.Transport.SMTP' )
 DECLARE @MailEntityTypeId int = ( SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Communication.Medium.Email' )
 DECLARE @MailAttributeId int
 
@@ -71,6 +72,7 @@ UPDATE [AttributeValue] SET [Value] = 'False' WHERE [AttributeId] = @MailAttribu
 DECLARE @SMTPEntityTypeGuid varchar(50) = ( SELECT LOWER(CAST([Guid] as varchar(50))) FROM [EntityType] WHERE [Id] = @SMTPEntityTypeId )
 SET @MailAttributeId = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [EntityTypeId] = @MailEntityTypeId AND [Key] = 'TransportContainer' )
 UPDATE [AttributeValue] SET [Value] = @SMTPEntityTypeGuid WHERE [AttributeId] = @MailAttributeId
+*/
 
 -- Add localhost domain to internal site so routes work
 IF NOT EXISTS (SELECT [Id] FROM [SiteDomain] WHERE SiteId = 1 AND Domain = 'localhost' )
